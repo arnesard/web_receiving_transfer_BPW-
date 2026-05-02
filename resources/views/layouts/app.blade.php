@@ -470,11 +470,9 @@
             <div class="header-avatar">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-            <form action="{{ route('pilihmenu.index') }}" method="POST" style="margin:0;">
-                <button type="submit" class="btn-header-logout" title="Logout">
-                    <i data-lucide="log-out"></i>
-                </button>
-            </form>
+            <a href="{{ route('pilihmenu.index') }}" class="btn-header-logout" title="Kembali ke Menu">
+                <i data-lucide="home"></i>
+            </a>
         </div>
 
         {{-- Hamburger (mobile) --}}
@@ -530,14 +528,9 @@
         @endif
         <div class="mobile-menu-divider"></div>
         <div class="mobile-user-section">
-            <div>
-                <div class="mobile-user-name">{{ auth()->user()->name ?? 'Admin' }}</div>
-            </div>
-            <form action="{{ route('pilihmenu.index') }}" method="POST" style="margin:0;">
-                <button type="submit" class="btn-mobile-logout" title="Logout">
-                    <i data-lucide="log-out"></i>
-                </button>
-            </form>
+            <a href="{{ route('pilihmenu.index') }}" class="btn-header-logout" title="Kembali ke Menu">
+                <i data-lucide="home"></i>
+            </a>
         </div>
     </div>
 

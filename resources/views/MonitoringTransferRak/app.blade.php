@@ -8,7 +8,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Forklift Monitor')</title>
     {{-- Critical CSS: dark background sebelum apapun load --}}
-    <style>html,body{background:#0b1220 !important;margin:0}</style>
+    <style>
+        html,
+        body {
+            background: #0b1220 !important;
+            margin: 0
+        }
+    </style>
     <style>
         * {
             margin: 0;
@@ -332,26 +338,14 @@
 </head>
 
 <body>
-    {{-- Top bar --}}
-    <div class="topbar">
-        <div class="topbar-title">
-            <span class="svg-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M9 18V6l8 6-8 6z" stroke-linecap="round" stroke-linejoin="round" />
-                    <rect x="3" y="4" width="2" height="16" rx="1" />
-                </svg>
-            </span>
-            <span>Forklift Monitor</span>
-        </div>
-        <div class="topbar-time" id="live-clock">--:--:--</div>
-    </div>
 
     {{-- Bottom Navigation --}}
     <nav class="navbar" id="navbar">
         <div class="nav-container">
 
             {{-- DASHBOARD --}}
-            <a href="{{ route('transfer.dashboard') }}" class="nav-item {{ request()->routeIs('transfer.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('transfer.dashboard') }}"
+                class="nav-item {{ request()->routeIs('transfer.dashboard') ? 'active' : '' }}">
                 <span class="svg-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <rect x="3" y="12" width="4" height="9" rx="1" />
@@ -376,7 +370,7 @@
             </a>
 
             {{-- PROFILE --}}
-              <a href="{{ route('karyawan.index') }}" class="nav-item">
+            <a href="{{ route('karyawan.index') }}" class="nav-item">
                 <span class="svg-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -433,17 +427,6 @@
     </div>
 
     <script>
-        // ===== LIVE CLOCK =====
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('live-clock').textContent = `${hours}:${minutes}:${seconds}`;
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
-
         // ===== SCROLL DETECTION (FIXED) =====
         const navbar = document.getElementById('navbar');
         const swipeIndicator = document.getElementById('swipeIndicator');
