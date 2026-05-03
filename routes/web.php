@@ -102,6 +102,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('transfer.scan');
     Route::post('/transfer-rak/finish', [TransferRakController::class, 'finish'])
         ->name('transfer.finish');
+    Route::post('/transfer-rak/scan-mobil-penerima', [TransferRakController::class, 'scanMobilPenerima'])
+        ->name('transfer.scanMobilPenerima');
+    Route::post('/transfer-rak/terima', [TransferRakController::class, 'terima'])
+        ->name('transfer.terima');
     Route::post('/transfer-rak/cancel', [TransferRakController::class, 'cancel'])
         ->name('transfer.cancel');
     Route::get('/transfer-rak/dashboard', [TransferRakController::class, 'dashboard'])

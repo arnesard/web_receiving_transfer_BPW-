@@ -49,6 +49,7 @@ class TransferRakController extends Controller
                 'id_karyawan'  => 'required|integer|exists:employees,id',
                 'nama_supir'   => 'required|string|max:255',
                 'nama_kendaraan' => 'required|string|max:255',
+                'lokasi_asal'    => 'required|string|max:255',
             ]);
 
             // Find-or-create supir by nama
@@ -67,6 +68,7 @@ class TransferRakController extends Controller
                 'id_karyawan' => $validated['id_karyawan'],
                 'id_supir'    => $driver->id,
                 'id_mobil'    => $vehicle->id,
+                'lokasi_asal' => $validated['lokasi_asal'],
                 'waktu_mulai' => now(),
                 'status'      => 'proses',
             ]);
@@ -180,6 +182,82 @@ class TransferRakController extends Controller
                 'success' => false,
                 'error'   => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * API: Scan Kendaraan saat Penerimaan
+     */
+    public function scanMobilPenerima(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'nama_kendaraan' => 'required|string|max:255',
+            ]);
+
+            $vehicle = Vehicle::where('nama_kendaraan', trim($validated['nama_kendaraan']))->first();
+            if (!$vehicle) {
+                return response()->json(['success' => false, 'error' => 'Kendaraan tidak ditemukan di sistem'], 404);
+            }
+
+            $transfer = TransferRak::with(['karyawan', 'supir', 'details'])
+                ->where('id_mobil', $vehicle->id)
+                ->where('status', 'proses')
+                ->latest()
+                ->first();
+
+            if (!$transfer) {
+                return response()->json(['success' => false, 'error' => 'Tidak ada pengiriman aktif (belum diterima) untuk kendaraan ini'], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'transfer' => [
+                    'id' => $transfer->id,
+                    'pengirim' => $transfer->karyawan->name ?? '-',
+                    'supir' => $transfer->supir->nama_karyawan ?? '-',
+                    'lokasi_asal' => $transfer->lokasi_asal ?? '-',
+                    'waktu_mulai' => $transfer->waktu_mulai->format('d/m/Y H:i'),
+                    'total_rak' => $transfer->total_rak,
+                    'details' => $transfer->details->map(fn($d) => [
+                        'kode_rak' => $d->kode_rak, 
+                        'waktu' => $d->waktu_scan ? $d->waktu_scan->format('H:i:s') : '-'
+                    ])
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Selesaikan penerimaan
+     */
+    public function terima(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'transfer_rak_id' => 'required|integer|exists:transfer_raks,id',
+                'lokasi_tujuan' => 'required|string|max:255',
+                'id_karyawan_penerima' => 'required|integer|exists:employees,id',
+            ]);
+
+            $transfer = TransferRak::find($validated['transfer_rak_id']);
+            if (!$transfer || $transfer->status !== 'proses') {
+                return response()->json(['success' => false, 'error' => 'Data transfer tidak valid atau sudah diselesaikan sebelumnya'], 400);
+            }
+
+            $transfer->update([
+                'status' => 'selesai',
+                'lokasi_tujuan' => $validated['lokasi_tujuan'],
+                'id_karyawan_penerima' => $validated['id_karyawan_penerima'],
+                'waktu_diterima' => now(),
+                'waktu_selesai' => now(),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Penerimaan berhasil diselesaikan']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
 
