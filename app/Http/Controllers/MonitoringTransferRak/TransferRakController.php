@@ -30,8 +30,8 @@ class TransferRakController extends Controller
     {
         $search = $request->get('q', '');
         $drivers = Driver::when($search, function ($query) use ($search) {
-                $query->where('nama_karyawan', 'like', "%{$search}%");
-            })
+            $query->where('nama_karyawan', 'like', "%{$search}%");
+        })
             ->orderBy('nama_karyawan')
             ->limit(20)
             ->get(['id', 'nama_karyawan']);
@@ -50,7 +50,10 @@ class TransferRakController extends Controller
                 'nama_supir'   => 'required|string|max:255',
                 'nama_kendaraan' => 'required|string|max:255',
                 'lokasi_asal'    => 'required|string|max:255',
+                'catatan' => 'nullable|string|max:1000',
             ]);
+
+            $catatan = $validated['catatan'] ?? null;
 
             // Find-or-create supir by nama
             $driver = Driver::firstOrCreate(
@@ -62,6 +65,7 @@ class TransferRakController extends Controller
                 ['nama_kendaraan' => trim($validated['nama_kendaraan'])]
             );
 
+
             // Buat record transfer baru
             $transfer = TransferRak::create([
                 'user_id'     => Auth::id(),
@@ -71,6 +75,7 @@ class TransferRakController extends Controller
                 'lokasi_asal' => $validated['lokasi_asal'],
                 'waktu_mulai' => now(),
                 'status'      => 'proses',
+                'catatan' => $catatan,
             ]);
 
             return response()->json([
@@ -79,6 +84,7 @@ class TransferRakController extends Controller
                 'supir_id'     => $driver->id,
                 'vehicle_id'   => $vehicle->id,
                 'message'      => 'Transfer dimulai',
+
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -134,7 +140,7 @@ class TransferRakController extends Controller
             return response()->json([
                 'success'   => true,
                 'kode_rak'  => $detail->kode_rak,
-                'waktu_scan'=> $detail->waktu_scan->format('H:i:s'),
+                'waktu_scan' => $detail->waktu_scan->format('H:i:s'),
                 'total'     => $total,
             ]);
         } catch (\Exception $e) {
@@ -202,7 +208,8 @@ class TransferRakController extends Controller
 
             $transfer = TransferRak::with(['karyawan', 'supir', 'details'])
                 ->where('id_mobil', $vehicle->id)
-                ->where('status', 'proses')
+                ->where('status', 'selesai')
+                ->whereNull('waktu_diterima')
                 ->latest()
                 ->first();
 
@@ -219,8 +226,9 @@ class TransferRakController extends Controller
                     'lokasi_asal' => $transfer->lokasi_asal ?? '-',
                     'waktu_mulai' => $transfer->waktu_mulai->format('d/m/Y H:i'),
                     'total_rak' => $transfer->total_rak,
+                    'catatan' => $transfer->catatan ?? '-',
                     'details' => $transfer->details->map(fn($d) => [
-                        'kode_rak' => $d->kode_rak, 
+                        'kode_rak' => $d->kode_rak,
                         'waktu' => $d->waktu_scan ? $d->waktu_scan->format('H:i:s') : '-'
                     ])
                 ]
@@ -243,7 +251,11 @@ class TransferRakController extends Controller
             ]);
 
             $transfer = TransferRak::find($validated['transfer_rak_id']);
-            if (!$transfer || $transfer->status !== 'proses') {
+            if (
+                !$transfer ||
+                $transfer->status !== 'selesai' ||
+                $transfer->waktu_diterima !== null
+            ) {
                 return response()->json(['success' => false, 'error' => 'Data transfer tidak valid atau sudah diselesaikan sebelumnya'], 400);
             }
 
@@ -331,6 +343,7 @@ class TransferRakController extends Controller
         // ── TREND 7 HARI TERAKHIR ──
         $trendRaw = TransferRak::selectRaw('DATE(created_at) as tgl, SUM(total_rak) as total')
             ->where('status', 'selesai')
+            ->whereNull('waktu_diterima')
             ->where('created_at', '>=', now()->subDays(6)->startOfDay())
             ->groupBy('tgl')
             ->orderBy('tgl')
@@ -345,12 +358,15 @@ class TransferRakController extends Controller
         });
 
         // ── TOP 5 OPERATOR ──
-        $topOperators = TransferRak::select('id_karyawan',
-                DB::raw('SUM(total_rak) as total_rak'),
-                DB::raw('COUNT(*) as jumlah'))
+        $topOperators = TransferRak::select(
+            'id_karyawan',
+            DB::raw('SUM(total_rak) as total_rak'),
+            DB::raw('COUNT(*) as jumlah')
+        )
             ->with('karyawan:id,name')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->where('status', 'selesai')
+            ->whereNull('waktu_diterima')
             ->groupBy('id_karyawan')
             ->orderByDesc('total_rak')
             ->limit(5)
@@ -363,10 +379,10 @@ class TransferRakController extends Controller
 
         // ── ACTIVITY FEED (10 terbaru) ──
         $activity = TransferRak::with([
-                'karyawan:id,name',
-                'supir:id,nama_karyawan',
-                'mobil:id,nama_kendaraan',
-            ])
+            'karyawan:id,name',
+            'supir:id,nama_karyawan',
+            'mobil:id,nama_kendaraan',
+        ])
             ->orderByDesc('created_at')
             ->limit(10)
             ->get()
