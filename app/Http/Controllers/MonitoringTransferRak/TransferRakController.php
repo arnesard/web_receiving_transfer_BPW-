@@ -82,17 +82,36 @@ class TransferRakController extends Controller
             }
 
             // Cek apakah mobil ini masih punya kiriman yang belum diterima semua
+            // Tapi kalau statusnya 'selesai' (belum diterima), kita kasih izin buat BUKA KEMBALI (Re-open)
             $activeTransfer = TransferRak::where('id_mobil', $vehicle->id)
                 ->whereIn('status', ['selesai', 'sebagian'])
+                ->whereNull('waktu_diterima')
                 ->first();
 
             if ($activeTransfer) {
+                if ($activeTransfer->status === 'selesai' && $activeTransfer->tipe === 'transfer') {
+                    // KASUS: Salah klik selesai / mau nambah rak
+                    $activeTransfer->update(['status' => 'proses']); // Balikin ke proses
+                    $totalScanned = TransferRakDetail::where('transfer_rak_id', $activeTransfer->id)->count();
+                    
+                    return response()->json([
+                        'success'      => true,
+                        'transfer_id'  => $activeTransfer->id,
+                        'joined'       => true,
+                        'reopened'     => true,
+                        'total_sudah'  => $totalScanned,
+                        'message'      => 'Membuka kembali transfer LB1 untuk ditambah rak.',
+                    ]);
+                }
+
+                // Kalau statusnya 'sebagian', berarti mobil sudah jalan dan bongkar di gudang 1.
+                // Ini mending jangan ditambahin biar datanya gak rancu.
                 $totalRak = TransferRakDetail::where('transfer_rak_id', $activeTransfer->id)->count();
                 $sudahDiterima = TransferRakDetail::where('transfer_rak_id', $activeTransfer->id)
                     ->whereNotNull('waktu_diterima')->count();
                 return response()->json([
                     'success' => false,
-                    'error'   => 'Kendaraan "' . $vehicle->nama_kendaraan . '" masih ada kiriman aktif (' . $sudahDiterima . '/' . $totalRak . ' rak diterima). Silakan selesaikan penerimaan dulu.',
+                    'error'   => 'Kendaraan "' . $vehicle->nama_kendaraan . '" sedang dalam proses bongkar (' . $sudahDiterima . '/' . $totalRak . ' rak diterima). Selesaikan penerimaan dulu.',
                 ], 422);
             }
 
@@ -351,7 +370,7 @@ class TransferRakController extends Controller
                 'transfer_rak_id'      => 'required|integer|exists:transfer_raks,id',
                 'lokasi_tujuan'        => 'required|string|max:255',
                 'id_karyawan_penerima' => 'required|integer|exists:employees,id',
-                'kode_rak_list'        => 'required|array|min:1',
+                'kode_rak_list'        => 'nullable|array', // Jadi nullable
                 'kode_rak_list.*'      => 'string',
             ]);
 
@@ -360,9 +379,29 @@ class TransferRakController extends Controller
                 return response()->json(['success' => false, 'error' => 'Data transfer tidak valid'], 400);
             }
 
-            // Update setiap rak yang diterima
+            if ($transfer->tipe === 'rak_kosong') {
+                // Flow Rak Kosong: Langsung selesaikan semua
+                $transfer->update([
+                    'status'              => 'diterima',
+                    'lokasi_tujuan'       => $validated['lokasi_tujuan'],
+                    'id_karyawan_penerima' => $validated['id_karyawan_penerima'],
+                    'waktu_diterima'      => now(),
+                ]);
+                return response()->json([
+                    'success'        => true,
+                    'message'        => 'Penerimaan rak/palet kosong berhasil diselesaikan!',
+                    'fully_received' => true,
+                ]);
+            }
+
+            // Flow Rak Isi (Partial):
+            $kodeList = $validated['kode_rak_list'] ?? [];
+            if (empty($kodeList)) {
+                return response()->json(['success' => false, 'error' => 'Silakan scan rak terlebih dahulu'], 422);
+            }
+
             $countUpdated = 0;
-            foreach ($validated['kode_rak_list'] as $kodeRak) {
+            foreach ($kodeList as $kodeRak) {
                 $updated = TransferRakDetail::where('transfer_rak_id', $validated['transfer_rak_id'])
                     ->where('kode_rak', $kodeRak)
                     ->whereNull('waktu_diterima')
@@ -626,23 +665,37 @@ class TransferRakController extends Controller
         // ── ACTIVITY FEED (10 terbaru) ──
         $activity = TransferRak::with([
             'karyawan:id,name',
+            'penerima:id,name', // Tambahkan relasi penerima
             'supir:id,nama_karyawan',
             'mobil:id,nama_kendaraan',
         ])
-            ->orderByDesc('created_at')
+            ->orderByDesc('updated_at') // Urutkan berdasarkan aktivitas terakhir
             ->limit(10)
             ->get()
-            ->map(fn($t) => [
-                'operator'  => $t->karyawan?->name ?? '-',
-                'supir'     => $t->supir?->nama_karyawan ?? '-',
-                'mobil'     => $t->mobil?->nama_kendaraan ?? '-',
-                'total_rak' => $t->total_rak,
-                'status'    => $t->status,
-                'durasi'    => ($t->waktu_mulai && $t->waktu_selesai)
-                    ? $t->waktu_mulai->diffInMinutes($t->waktu_selesai) . ' mnt'
-                    : '-',
-                'waktu'     => $t->created_at->format('d/m H:i'),
-            ]);
+            ->map(function($t) {
+                // Ambil semua nama pengirim unik dari detail (kalo ada)
+                $senderNames = \App\Models\MonitoringTransferRak\TransferRakDetail::where('transfer_rak_id', $t->id)
+                    ->join('employees', 'transfer_rak_details.id_karyawan_pengirim', '=', 'employees.id')
+                    ->distinct()
+                    ->pluck('employees.name')
+                    ->toArray();
+                
+                $senders = !empty($senderNames) ? implode(', ', $senderNames) : ($t->karyawan?->name ?? '-');
+
+                return [
+                    'tipe'      => $t->tipe,
+                    'operator_kirim'   => $senders,
+                    'operator_terima'  => $t->penerima?->name ?? '-',
+                    'supir'     => $t->supir?->nama_karyawan ?? '-',
+                    'mobil'     => $t->mobil?->nama_kendaraan ?? '-',
+                    'total_rak' => ($t->tipe === 'rak_kosong') ? $t->jumlah_rak_kosong : $t->total_rak,
+                    'total_palet'=> $t->jumlah_palet_kosong,
+                    'status'    => $t->status,
+                    'jam_kirim' => $t->waktu_selesai ? $t->waktu_selesai->format('H:i') : '-',
+                    'jam_terima'=> $t->waktu_diterima ? $t->waktu_diterima->format('H:i') : '-',
+                    'tgl'       => $t->created_at->format('d/m'),
+                ];
+            });
 
         return response()->json([
             'kpi' => [

@@ -905,6 +905,7 @@
             if (!data.success) throw new Error(data.error);
 
             state.terimaTransferId = data.transfer.id;
+            state.terimaTipe = data.transfer.tipe; // Simpan tipenya
             state.terimaScanList = [];
             document.getElementById('terimaScanList').innerHTML = '';
             document.getElementById('terimaCount').textContent = '0';
@@ -922,14 +923,16 @@
                 document.getElementById('tdSudahDiterima').textContent = '-';
                 document.getElementById('tdSisa').textContent = '-';
                 // Sembunyikan scan rak untuk rak kosong
-                document.getElementById('scanTerimaInput').parentElement.style.display = 'none';
+                document.getElementById('scanTerimaInput').parentElement.parentElement.style.display = 'none';
                 document.querySelector('#terimaCount').parentElement.parentElement.style.display = 'none';
+                document.getElementById('tdListRakMobil').parentElement.style.display = 'none';
             } else {
                 document.getElementById('tdTotal').textContent = data.transfer.total_rak + ' Rak';
                 document.getElementById('tdSudahDiterima').textContent = data.transfer.sudah_diterima + ' Rak';
                 document.getElementById('tdSisa').textContent = data.transfer.sisa_rak + ' Rak';
-                document.getElementById('scanTerimaInput').parentElement.style.display = '';
-                document.querySelector('#terimaCount').parentElement.parentElement.style.display = '';
+                document.getElementById('scanTerimaInput').parentElement.parentElement.style.display = 'flex';
+                document.querySelector('#terimaCount').parentElement.parentElement.style.display = 'flex';
+                document.getElementById('tdListRakMobil').parentElement.style.display = 'flex';
             }
 
             document.getElementById('tdWaktu').textContent = data.transfer.waktu_mulai;
@@ -938,22 +941,24 @@
             // Tampilkan daftar rak di mobil secara visual
             const listRakMobil = document.getElementById('tdListRakMobil');
             listRakMobil.innerHTML = '';
-            if (data.transfer.belum_diterima && data.transfer.belum_diterima.length > 0) {
+            if (data.transfer.tipe !== 'rak_kosong' && data.transfer.belum_diterima && data.transfer.belum_diterima.length > 0) {
                 data.transfer.belum_diterima.forEach(r => {
                     const badge = document.createElement('span');
                     badge.style = 'background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 8px; border-radius:6px; font-size:11px; color:#cbd5e1;';
                     badge.textContent = r.kode_rak;
                     listRakMobil.appendChild(badge);
                 });
-            } else {
+            } else if (data.transfer.tipe !== 'rak_kosong') {
                 listRakMobil.innerHTML = '<span style="color:#475569; font-size:11px;">(Tidak ada rak)</span>';
             }
 
             document.getElementById('terimaDetail').classList.add('visible');
-            document.getElementById('scanTerimaInput').focus();
+            if (data.transfer.tipe !== 'rak_kosong') {
+                document.getElementById('scanTerimaInput').focus();
+            }
             
             // Simpan list rak yang belum diterima untuk fitur "Terima Semua"
-            state.rakBelumDiterima = data.transfer.belum_diterima.map(r => r.kode_rak);
+            state.rakBelumDiterima = data.transfer.belum_diterima ? data.transfer.belum_diterima.map(r => r.kode_rak) : [];
             
             checkTerimaReady();
         } catch (e) {
@@ -1069,8 +1074,15 @@
     const checkTerimaReady = () => {
         const loc = document.getElementById('lokasiTujuanInput').value;
         const pen = document.getElementById('penerimaInput').value;
-        const hasScan = state.terimaScanList.length > 0;
-        document.getElementById('btnProsesTerima').disabled = !(loc && pen && state.terimaTransferId && hasScan);
+        
+        if (state.terimaTipe === 'rak_kosong') {
+            // Kalo rak kosong, gak perlu nunggu scan
+            document.getElementById('btnProsesTerima').disabled = !(loc && pen && state.terimaTransferId);
+        } else {
+            // Kalo rak isi, harus ada yang di-scan
+            const hasScan = state.terimaScanList.length > 0;
+            document.getElementById('btnProsesTerima').disabled = !(loc && pen && state.terimaTransferId && hasScan);
+        }
     };
     document.getElementById('lokasiTujuanInput').addEventListener('change', checkTerimaReady);
     document.getElementById('penerimaInput').addEventListener('change', checkTerimaReady);

@@ -685,37 +685,53 @@
 
     // ── ACTIVITY FEED ──
     function updateActivity(items) {
-        const el = document.getElementById('activityFeed');
-        if (!items.length) {
-            el.innerHTML = '<div class="empty-state">Belum ada aktivitas</div>';
+        const feed = document.getElementById('activityFeed');
+        if (!items || !items.length) {
+            feed.innerHTML = '<div style="text-align:center; padding:20px; color:#475569; font-size:12px;">Belum ada aktivitas</div>';
             return;
         }
 
-        const statusClass = {
-            selesai: 'status-selesai',
-            proses: 'status-proses',
-            batal: 'status-batal'
-        };
-        const statusLabel = {
-            selesai: '✅ Selesai',
-            proses: '🔄 Proses',
-            batal: '❌ Batal'
-        };
+        feed.innerHTML = items.map(item => {
+            let statusDot = 'status-dot';
+            if (item.status === 'diterima') statusDot += ' status-green';
+            else if (item.status === 'proses') statusDot += ' status-blue';
+            else if (item.status === 'sebagian') statusDot += ' status-orange';
+            else if (item.status === 'batal') statusDot += ' status-red';
 
-        el.innerHTML = items.map(a => `
-        <div class="activity-item">
-            <div class="activity-status ${statusClass[a.status] || ''}"></div>
-            <div class="activity-main">
-                <div class="activity-op">${a.operator}</div>
-                <div class="activity-sub">🚗 ${a.supir} &nbsp;|&nbsp; 🚙 ${a.mobil} &nbsp;|&nbsp; ${statusLabel[a.status] || a.status} &nbsp;|&nbsp; ⏱ ${a.durasi}</div>
-            </div>
-            <div class="activity-right">
-                <div class="activity-rak">${a.total_rak} <span style="font-size:10px;font-weight:400;color:#64748b">rak</span></div>
-                <div class="activity-time">${a.waktu}</div>
-            </div>
-        </div>
-    `).join('');
+            const isKosong = item.tipe === 'rak_kosong';
+            const labelQty = isKosong 
+                ? `<span style="color:#f59e0b">${item.total_rak} Rak / ${item.total_palet} Palet (KOSONG)</span>`
+                : `<span style="color:#64c8ff">${item.total_rak} Rak Isi</span>`;
+
+            return `
+                <div class="activity-item">
+                    <div class="${statusDot}"></div>
+                    <div class="activity-content">
+                        <div class="activity-main" style="display:flex; justify-content:space-between; align-items:center;">
+                            <b>${item.mobil}</b>
+                            ${labelQty}
+                        </div>
+                        <div class="activity-meta" style="color:#cbd5e1; font-size:11px; margin-top:6px; line-height:1.4;">
+                             <div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.03); padding:4px 8px; border-radius:4px;">
+                                <span>📤 <b>KIRIM:</b> ${item.operator_kirim}</span>
+                                <span style="color:#64c8ff">${item.jam_kirim} • ${item.tgl}</span>
+                             </div>
+                             <div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.01); padding:4px 8px; border-radius:4px; margin-top:2px;">
+                                <span>📥 <b>TERIMA:</b> ${item.operator_terima}</span>
+                                <span style="color:#4ade80">${item.jam_terima}</span>
+                             </div>
+                             <div style="margin-top:4px; padding:0 8px; color:#94a3b8; font-size:10px;">
+                                🚛 Supir: ${item.supir}
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
+
+    // ── AUTO REFRESH ──
+    setInterval(loadData, 30000); // Refresh data tiap 30 detik
 
     // ── INIT ──
     document.addEventListener('DOMContentLoaded', loadData);
