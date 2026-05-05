@@ -104,10 +104,14 @@ Route::middleware(['auth'])->group(function () {
         ->name('transfer.finish');
     Route::post('/transfer-rak/scan-mobil-penerima', [TransferRakController::class, 'scanMobilPenerima'])
         ->name('transfer.scanMobilPenerima');
+    Route::post('/transfer-rak/scan-terima', [TransferRakController::class, 'scanTerima'])
+        ->name('transfer.scanTerima');
     Route::post('/transfer-rak/terima', [TransferRakController::class, 'terima'])
         ->name('transfer.terima');
     Route::post('/transfer-rak/cancel', [TransferRakController::class, 'cancel'])
         ->name('transfer.cancel');
+    Route::post('/transfer-rak/start-kosong', [TransferRakController::class, 'startKosong'])
+        ->name('transfer.startKosong');
     Route::get('/transfer-rak/dashboard', [TransferRakController::class, 'dashboard'])
         ->name('transfer.dashboard');
     Route::get('/transfer-rak/dashboard/data', [TransferRakController::class, 'dashboardData'])

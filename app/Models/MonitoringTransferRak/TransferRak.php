@@ -11,6 +11,7 @@ class TransferRak extends Model
 
     protected $fillable = [
         'user_id',
+        'tipe',
         'id_karyawan',
         'id_supir',
         'id_mobil',
@@ -18,6 +19,8 @@ class TransferRak extends Model
         'lokasi_tujuan',
         'id_karyawan_penerima',
         'total_rak',
+        'jumlah_rak_kosong',
+        'jumlah_palet_kosong',
         'waktu_mulai',
         'waktu_selesai',
         'waktu_diterima',

@@ -12,10 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transfer_raks', function (Blueprint $table) {
-            $table->string('lokasi_asal')->nullable()->after('id_mobil');
-            $table->string('lokasi_tujuan')->nullable()->after('lokasi_asal');
-            $table->foreignId('id_karyawan_penerima')->nullable()->constrained('employees')->onDelete('restrict')->after('lokasi_tujuan');
-            $table->timestamp('waktu_diterima')->nullable()->after('id_karyawan_penerima');
+            if (!Schema::hasColumn('transfer_raks', 'lokasi_asal')) {
+                $table->string('lokasi_asal')->nullable()->after('id_mobil');
+            }
+            if (!Schema::hasColumn('transfer_raks', 'lokasi_tujuan')) {
+                $table->string('lokasi_tujuan')->nullable()->after('lokasi_asal');
+            }
+            if (!Schema::hasColumn('transfer_raks', 'id_karyawan_penerima')) {
+                $table->foreignId('id_karyawan_penerima')->nullable()->constrained('employees')->onDelete('restrict')->after('lokasi_tujuan');
+            }
+            if (!Schema::hasColumn('transfer_raks', 'waktu_diterima')) {
+                $table->timestamp('waktu_diterima')->nullable()->after('id_karyawan_penerima');
+            }
         });
     }
 
