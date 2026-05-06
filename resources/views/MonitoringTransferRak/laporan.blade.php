@@ -406,6 +406,7 @@
     </style>
 @endpush
 
+@section('content')
 {{-- MODAL DETAIL --}}
 <div class="modal-overlay hidden" id="detailModal">
     <div class="modal-box">
@@ -505,6 +506,7 @@
         </table>
     </div>
 </div>
+@endsection
 
 <script src="{{ asset('js/xlsx.full.min.js') }}"></script>
 <script>

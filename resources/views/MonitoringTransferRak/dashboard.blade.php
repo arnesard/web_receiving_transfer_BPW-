@@ -362,6 +362,7 @@
     </style>
 @endpush
 
+@section('content')    
 <div class="dash-wrap">
     {{-- HEADER --}}
     <div class="dash-header">
@@ -433,6 +434,7 @@
         </div>
     </div>
 </div>
+@endsection
 
 <script src="{{ asset('js/apexcharts.min.js') }}"></script>
 <script>

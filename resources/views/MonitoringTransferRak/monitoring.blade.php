@@ -478,20 +478,7 @@
     </style>
 @endpush
 
-{{-- MODAL PILIH OPERATOR --}}
-<div class="modal-overlay hidden" id="operatorModal">
-    <div class="modal-box">
-        <div class="modal-title">👤 Pilih Operator (Login)</div>
-        <select class="setup-select" id="modalKaryawanSelect" style="margin-bottom:12px;">
-            <option value="">-- Pilih Operator --</option>
-            @foreach ($karyawan as $k)
-                <option value="{{ $k->id }}" data-nama="{{ $k->name }}">{{ $k->name }}</option>
-            @endforeach
-        </select>
-        <button class="modal-btn" id="btnConfirmOperator">Konfirmasi</button>
-    </div>
-</div>
-
+@section('content')
 <div class="app-wrap">
     <div class="header">
         <div class="header-top">
@@ -724,6 +711,21 @@
                 <button class="btn-center btn-finish" id="btnKonfirmasiKosong">Konfirmasi</button>
             </div>
         </div>
+    </div>
+</div>
+@endsection
+
+{{-- MODAL PILIH OPERATOR --}}
+<div class="modal-overlay hidden" id="operatorModal">
+    <div class="modal-box">
+        <div class="modal-title">👤 Pilih Operator (Login)</div>
+        <select class="setup-select" id="modalKaryawanSelect" style="margin-bottom:12px;">
+            <option value="">-- Pilih Operator --</option>
+            @foreach ($karyawan as $k)
+                <option value="{{ $k->id }}" data-nama="{{ $k->name }}">{{ $k->name }}</option>
+            @endforeach
+        </select>
+        <button class="modal-btn" id="btnConfirmOperator">Konfirmasi</button>
     </div>
 </div>
 
