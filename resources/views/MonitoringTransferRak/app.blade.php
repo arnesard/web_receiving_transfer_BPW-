@@ -406,9 +406,6 @@
         </div>
     </nav>
 
-    {{-- Swipe Indicator --}}
-    <div class="swipe-indicator" id="swipeIndicator">👆 Swipe up to hide</div>
-
     {{-- Main Content --}}
     <div class="container">
         @if (session('success'))
@@ -428,68 +425,22 @@
 
     <script>
         // ===== SCROLL DETECTION (FIXED) =====
-        const navbar = document.getElementById('navbar');
-        const swipeIndicator = document.getElementById('swipeIndicator');
-        const body = document.body;
-
         let lastScrollTop = 0;
-        let isHidden = false;
-        let scrollTimeout;
-        let indicatorShown = false;
 
         window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const scrollDelta = scrollTop - lastScrollTop;
+            const scrollTop = window.pageYOffset;
 
-            console.log('Scroll Delta:', scrollDelta, 'Current Position:', scrollTop); // Debug
-
-            // SCROLL DOWN (positif > 50) = HIDE navbar
-            if (scrollDelta > 50 && !isHidden && scrollTop > 100) {
+            if (scrollTop > lastScrollTop + 20) {
                 navbar.classList.add('hide');
                 body.classList.add('navbar-hidden');
-                isHidden = true;
-                console.log('Navbar HIDDEN');
-
-                // Show indicator
-                if (!indicatorShown) {
-                    swipeIndicator.style.animation = 'none';
-                    setTimeout(() => {
-                        swipeIndicator.style.animation = 'fadeInOut 3s ease-in-out';
-                    }, 10);
-                    indicatorShown = true;
-                }
-            }
-            // SCROLL UP (negatif < -50) = SHOW navbar
-            else if (scrollDelta < -50 && isHidden) {
+            } else if (scrollTop < lastScrollTop - 20) {
                 navbar.classList.remove('hide');
                 body.classList.remove('navbar-hidden');
-                isHidden = false;
-                console.log('Navbar SHOWN');
             }
 
-            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-
-            // Clear timeout
-            clearTimeout(scrollTimeout);
+            lastScrollTop = scrollTop;
         }, {
             passive: true
-        });
-
-        // Tap navbar untuk show
-        navbar.addEventListener('click', () => {
-            if (isHidden) {
-                navbar.classList.remove('hide');
-                body.classList.remove('navbar-hidden');
-                isHidden = false;
-                console.log('Navbar SHOWN (tap)');
-            }
-        });
-
-        // Show navbar on page load
-        window.addEventListener('load', () => {
-            navbar.classList.remove('hide');
-            body.classList.remove('navbar-hidden');
-            isHidden = false;
         });
     </script>
 

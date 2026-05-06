@@ -687,7 +687,8 @@
     function updateActivity(items) {
         const feed = document.getElementById('activityFeed');
         if (!items || !items.length) {
-            feed.innerHTML = '<div style="text-align:center; padding:20px; color:#475569; font-size:12px;">Belum ada aktivitas</div>';
+            feed.innerHTML =
+                '<div style="text-align:center; padding:20px; color:#475569; font-size:12px;">Belum ada aktivitas</div>';
             return;
         }
 
@@ -699,9 +700,9 @@
             else if (item.status === 'batal') statusDot += ' status-red';
 
             const isKosong = item.tipe === 'rak_kosong';
-            const labelQty = isKosong 
-                ? `<span style="color:#f59e0b">${item.total_rak} Rak / ${item.total_palet} Palet (KOSONG)</span>`
-                : `<span style="color:#64c8ff">${item.total_rak} Rak Isi</span>`;
+            const labelQty = isKosong ?
+                `<span style="color:#f59e0b">${item.total_rak} Rak / ${item.total_palet} Palet (KOSONG)</span>` :
+                `<span style="color:#64c8ff">${item.total_rak} Rak Isi</span>`;
 
             return `
                 <div class="activity-item">
@@ -731,7 +732,7 @@
     }
 
     // ── AUTO REFRESH ──
-    setInterval(loadData, 30000); // Refresh data tiap 30 detik
+    setInterval(loadData, 10000); // Refresh data tiap 10 detik
 
     // ── INIT ──
     document.addEventListener('DOMContentLoaded', loadData);

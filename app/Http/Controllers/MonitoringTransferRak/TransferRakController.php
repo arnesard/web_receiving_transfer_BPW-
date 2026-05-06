@@ -66,11 +66,11 @@ class TransferRakController extends Controller
             );
 
             // Cek apakah mobil ini sudah ada transfer yang sedang proses (multi-operator join)
-            $existingProses = TransferRak::where('id_mobil', $vehicle->id)
-                ->where('status', 'proses')
+            $existingActive = TransferRak::where('id_mobil', $vehicle->id)
+                ->whereIn('status', ['proses', 'selesai', 'sebagian'])
                 ->first();
 
-            if ($existingProses) {
+            if ($existingActive) {
                 $totalScanned = TransferRakDetail::where('transfer_rak_id', $existingProses->id)->count();
                 return response()->json([
                     'success'      => true,
@@ -84,7 +84,7 @@ class TransferRakController extends Controller
             // Cek apakah mobil ini masih punya kiriman yang belum diterima semua
             // Tapi kalau statusnya 'selesai' (belum diterima), kita kasih izin buat BUKA KEMBALI (Re-open)
             $activeTransfer = TransferRak::where('id_mobil', $vehicle->id)
-                ->whereIn('status', ['selesai', 'sebagian'])
+                ->whereIn('status', ['selesai', 'diterima', 'sebagian'])
                 ->whereNull('waktu_diterima')
                 ->first();
 
@@ -93,7 +93,7 @@ class TransferRakController extends Controller
                     // KASUS: Salah klik selesai / mau nambah rak
                     $activeTransfer->update(['status' => 'proses']); // Balikin ke proses
                     $totalScanned = TransferRakDetail::where('transfer_rak_id', $activeTransfer->id)->count();
-                    
+
                     return response()->json([
                         'success'      => true,
                         'transfer_id'  => $activeTransfer->id,
@@ -270,9 +270,9 @@ class TransferRakController extends Controller
                 ->whereNotNull('id_karyawan_pengirim')
                 ->distinct()
                 ->pluck('id_karyawan_pengirim');
-            
+
             $namaPengirim = \App\Models\Employee::whereIn('id', $pengirimIds)->pluck('name')->toArray();
-            
+
             // Kalo gak ada di detail, pake pengirim utama
             if (empty($namaPengirim)) {
                 $namaPengirim = [$transfer->karyawan->name ?? '-'];
@@ -522,7 +522,7 @@ class TransferRakController extends Controller
                 ->first();
 
             if ($activeTransfer) {
-                 return response()->json([
+                return response()->json([
                     'success' => false,
                     'error'   => 'Mobil ini masih membawa RAK ISI yang belum diterima semua. Selesaikan penerimaan rak isi dulu.',
                 ], 422);
@@ -606,8 +606,7 @@ class TransferRakController extends Controller
 
         // ── KPI ──
         $selesai = TransferRak::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'selesai');
-
+            ->whereIn('status', ['selesai', 'diterima', 'sebagian']);
         $totalRak        = (clone $selesai)->sum('total_rak');
         $transferSelesai = (clone $selesai)->count();
         $transferBatal   = TransferRak::whereBetween('created_at', [$startDate, $endDate])
@@ -618,8 +617,7 @@ class TransferRakController extends Controller
 
         // Rata-rata durasi (menit)
         $avgDurasi = TransferRak::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'selesai')
-            ->whereNotNull('waktu_selesai')
+            ->whereIn('status', ['selesai', 'diterima', 'sebagian'])
             ->get()
             ->avg(fn($t) => $t->waktu_mulai && $t->waktu_selesai
                 ? $t->waktu_mulai->diffInMinutes($t->waktu_selesai)
@@ -627,8 +625,7 @@ class TransferRakController extends Controller
 
         // ── TREND 7 HARI TERAKHIR ──
         $trendRaw = TransferRak::selectRaw('DATE(created_at) as tgl, SUM(total_rak) as total')
-            ->where('status', 'selesai')
-            ->whereNull('waktu_diterima')
+            ->whereIn('status', ['selesai', 'diterima', 'sebagian'])
             ->where('created_at', '>=', now()->subDays(6)->startOfDay())
             ->groupBy('tgl')
             ->orderBy('tgl')
@@ -650,7 +647,7 @@ class TransferRakController extends Controller
         )
             ->with('karyawan:id,name')
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'selesai')
+            ->whereIn('status', ['selesai', 'diterima', 'sebagian'])
             ->whereNull('waktu_diterima')
             ->groupBy('id_karyawan')
             ->orderByDesc('total_rak')
@@ -672,14 +669,14 @@ class TransferRakController extends Controller
             ->orderByDesc('updated_at') // Urutkan berdasarkan aktivitas terakhir
             ->limit(10)
             ->get()
-            ->map(function($t) {
+            ->map(function ($t) {
                 // Ambil semua nama pengirim unik dari detail (kalo ada)
                 $senderNames = \App\Models\MonitoringTransferRak\TransferRakDetail::where('transfer_rak_id', $t->id)
                     ->join('employees', 'transfer_rak_details.id_karyawan_pengirim', '=', 'employees.id')
                     ->distinct()
                     ->pluck('employees.name')
                     ->toArray();
-                
+
                 $senders = !empty($senderNames) ? implode(', ', $senderNames) : ($t->karyawan?->name ?? '-');
 
                 return [
@@ -689,10 +686,10 @@ class TransferRakController extends Controller
                     'supir'     => $t->supir?->nama_karyawan ?? '-',
                     'mobil'     => $t->mobil?->nama_kendaraan ?? '-',
                     'total_rak' => ($t->tipe === 'rak_kosong') ? $t->jumlah_rak_kosong : $t->total_rak,
-                    'total_palet'=> $t->jumlah_palet_kosong,
+                    'total_palet' => $t->jumlah_palet_kosong,
                     'status'    => $t->status,
-                    'jam_kirim' => $t->waktu_selesai ? $t->waktu_selesai->format('H:i') : '-',
-                    'jam_terima'=> $t->waktu_diterima ? $t->waktu_diterima->format('H:i') : '-',
+                    'jam_kirim' => $t->waktu_mulai ? $t->waktu_mulai->format('H:i') : '-',
+                    'jam_terima' => $t->waktu_diterima ? $t->waktu_diterima->format('H:i') : '-',
                     'tgl'       => $t->created_at->format('d/m'),
                 ];
             });
