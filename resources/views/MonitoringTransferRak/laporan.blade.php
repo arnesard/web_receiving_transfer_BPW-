@@ -286,9 +286,9 @@
             border: 1px solid rgba(59, 130, 246, 0.25);
             border-radius: 16px;
             padding: 20px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 80vh;
+            width: 95%;
+            max-width: 800px; /* Lebarin modal biar muat kolom baru */
+            max-height: 90vh;
             overflow-y: auto;
         }
 
@@ -415,16 +415,22 @@
                 <button class="modal-close" onclick="closeDetail()">&times;</button>
             </div>
             <div class="modal-info" id="modalInfo"></div>
-            <table class="detail-table">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Kode Rak</th>
-                        <th>Waktu Scan</th>
-                    </tr>
-                </thead>
-                <tbody id="modalBody"></tbody>
-            </table>
+            <div style="overflow-x:auto;">
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Rak</th>
+                            <th>Pengirim</th>
+                            <th>Waktu Kirim</th>
+                            <th>Penerima</th>
+                            <th>Lokasi</th>
+                            <th>Waktu Terima</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -432,6 +438,34 @@
         {{-- HEADER --}}
         <div class="lap-header">
             <div class="lap-title">📋 Laporan Transfer Rak</div>
+        </div>
+
+        {{-- KPI SUMMARY --}}
+        <div class="kpi-row">
+            <div class="kpi-card" style="--kc: #64c8ff">
+                <div class="kpi-icon">🚛</div>
+                <div class="kpi-label">Total Transfer</div>
+                <div class="kpi-value" id="kpiTransfer">0</div>
+                <div class="kpi-sub">Data terfilter</div>
+            </div>
+            <div class="kpi-card" style="--kc: #4ade80">
+                <div class="kpi-icon">📦</div>
+                <div class="kpi-label">Total Rak</div>
+                <div class="kpi-value" id="kpiRak">0</div>
+                <div class="kpi-sub">Isi + Kosong</div>
+            </div>
+            <div class="kpi-card" style="--kc: #f59e0b">
+                <div class="kpi-icon">⏱</div>
+                <div class="kpi-label">Rata-rata Durasi</div>
+                <div class="kpi-value" id="kpiDurasi">0</div>
+                <div class="kpi-sub">Menit per trip</div>
+            </div>
+            <div class="kpi-card" style="--kc: #a78bfa">
+                <div class="kpi-icon">🎯</div>
+                <div class="kpi-label">Success Rate</div>
+                <div class="kpi-value" id="kpiRate">0%</div>
+                <div class="kpi-sub">Persentase selesai</div>
+            </div>
         </div>
 
         {{-- FILTER --}}
@@ -606,7 +640,11 @@
             <tr>
                 <td>${d.no}</td>
                 <td class="rak-code">${d.kode_rak}</td>
-                <td>${d.waktu_scan}</td>
+                <td style="font-size:11px">${d.operator}</td>
+                <td style="font-size:11px">${d.waktu_scan}</td>
+                <td style="font-size:11px;color:#4ade80">${d.penerima}</td>
+                <td style="font-size:11px">${d.lokasi_terima}</td>
+                <td style="font-size:11px;color:#4ade80">${d.waktu_terima}</td>
             </tr>
         `).join('');
         } catch (e) {

@@ -12,6 +12,7 @@ class TransferRakDetail extends Model
 
     protected $fillable = [
         'transfer_rak_id',
+        'id_karyawan_pengirim', // Tambahin ini
         'kode_rak',
         'waktu_scan',
         'lokasi_diterima',
@@ -27,6 +28,11 @@ class TransferRakDetail extends Model
     public function transferRak()
     {
         return $this->belongsTo(TransferRak::class, 'transfer_rak_id');
+    }
+
+    public function karyawanPengirim()
+    {
+        return $this->belongsTo(Employee::class, 'id_karyawan_pengirim');
     }
 
     public function penerima()
