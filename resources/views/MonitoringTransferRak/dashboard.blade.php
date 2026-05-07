@@ -352,7 +352,10 @@
             }
 
             .charts-row {
-                grid-template-columns: 3fr 2fr;
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 12px;
+                margin-bottom: 16px;
             }
 
             .dash-title {
@@ -362,85 +365,80 @@
     </style>
 @endpush
 
-@section('content')    
-<div class="dash-wrap">
-    {{-- HEADER --}}
-    <div class="dash-header">
-        <div class="dash-title">Dashboard Transfer Rak</div>
-        <button class="dash-refresh" id="btnRefresh" onclick="loadData()">
-            <span class="refresh-icon" id="refreshIcon">🔄</span>
-            <span>Refresh</span>
-        </button>
-    </div>
+@section('content')
+    <div class="dash-wrap">
+        {{-- HEADER --}}
+        <div class="dash-header">
+            <div class="dash-title">Dashboard Transfer Rak</div>
+            <button class="dash-refresh" id="btnRefresh" onclick="loadData()">
+                <span class="refresh-icon" id="refreshIcon">🔄</span>
+                <span>Refresh</span>
+            </button>
+        </div>
 
-    {{-- FILTER --}}
-    <div class="filter-tabs">
-        <button class="filter-tab active" data-range="today" onclick="setRange('today', this)">Hari Ini</button>
-        <button class="filter-tab" data-range="week" onclick="setRange('week', this)">Minggu Ini</button>
-        <button class="filter-tab" data-range="month" onclick="setRange('month', this)">Bulan Ini</button>
-    </div>
+        {{-- FILTER --}}
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-range="today" onclick="setRange('today', this)">Hari Ini</button>
+            <button class="filter-tab" data-range="week" onclick="setRange('week', this)">Minggu Ini</button>
+            <button class="filter-tab" data-range="month" onclick="setRange('month', this)">Bulan Ini</button>
+        </div>
 
-    {{-- KPI CARDS --}}
-    <div class="kpi-grid">
-        <div class="kpi-card kpi-blue">
-            <span class="kpi-icon">📦</span>
-            <div class="kpi-label">Total Rak</div>
-            <div class="kpi-value loading" id="kpiTotalRak">0</div>
-            <div class="kpi-sub">rak dipindahkan</div>
+        {{-- KPI CARDS --}}
+        <div class="kpi-grid">
+            <div class="kpi-card kpi-blue">
+                <span class="kpi-icon">📦</span>
+                <div class="kpi-label">Total Rak</div>
+                <div class="kpi-value loading" id="kpiTotalRak">0</div>
+                <div class="kpi-sub">rak dipindahkan</div>
+            </div>
+            <div class="kpi-card kpi-green">
+                <span class="kpi-icon">✅</span>
+                <div class="kpi-label">Transfer Selesai</div>
+                <div class="kpi-value loading" id="kpiSelesai">0</div>
+                <div class="kpi-sub">transaksi sukses</div>
+            </div>
+            <div class="kpi-card kpi-purple">
+                <span class="kpi-icon">🎯</span>
+                <div class="kpi-label">Completion Rate</div>
+                <div class="kpi-value loading" id="kpiRate">0%</div>
+                <div class="kpi-sub">dari total transfer</div>
+            </div>
+            <div class="kpi-card kpi-yellow">
+                <span class="kpi-icon">⏱️</span>
+                <div class="kpi-label">Rata-rata Durasi</div>
+                <div class="kpi-value loading" id="kpiDurasi">-</div>
+                <div class="kpi-sub">per transfer</div>
+            </div>
+            <div class="kpi-card kpi-orange wide">
+                <span class="kpi-icon">🔄</span>
+                <div class="kpi-label">Sedang Proses</div>
+                <div class="kpi-value loading" id="kpiProses">0</div>
+                <div class="kpi-sub">transfer aktif sekarang</div>
+            </div>
         </div>
-        <div class="kpi-card kpi-green">
-            <span class="kpi-icon">✅</span>
-            <div class="kpi-label">Transfer Selesai</div>
-            <div class="kpi-value loading" id="kpiSelesai">0</div>
-            <div class="kpi-sub">transaksi sukses</div>
-        </div>
-        <div class="kpi-card kpi-purple">
-            <span class="kpi-icon">🎯</span>
-            <div class="kpi-label">Completion Rate</div>
-            <div class="kpi-value loading" id="kpiRate">0%</div>
-            <div class="kpi-sub">dari total transfer</div>
-        </div>
-        <div class="kpi-card kpi-yellow">
-            <span class="kpi-icon">⏱️</span>
-            <div class="kpi-label">Rata-rata Durasi</div>
-            <div class="kpi-value loading" id="kpiDurasi">-</div>
-            <div class="kpi-sub">per transfer</div>
-        </div>
-        <div class="kpi-card kpi-orange wide">
-            <span class="kpi-icon">🔄</span>
-            <div class="kpi-label">Sedang Proses</div>
-            <div class="kpi-value loading" id="kpiProses">0</div>
-            <div class="kpi-sub">transfer aktif sekarang</div>
-        </div>
-    </div>
 
-    {{-- CHARTS --}}
-    <div class="charts-row">
-        <div class="chart-card">
-            <div class="chart-title">📈 Trend Rak 7 Hari Terakhir</div>
-            <div id="chartTrend"></div>
+        {{-- CHARTS --}}
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-title">📈 Trend Rak 7 Hari Terakhir</div>
+                <div id="chartTrend"></div>
+            </div>
         </div>
-        <div class="chart-card">
-            <div class="chart-title">🏆 Top 5 Operator</div>
-            <div id="chartOperator"></div>
-        </div>
-    </div>
 
-    {{-- ACTIVITY FEED --}}
-    <div class="activity-card">
-        <div class="activity-title">🕐 Aktivitas Terbaru</div>
-        <div id="activityFeed">
-            <div class="empty-state">Memuat data...</div>
+        {{-- ACTIVITY FEED --}}
+        <div class="activity-card">
+            <div class="activity-title">🕐 Aktivitas Terbaru</div>
+            <div id="activityFeed">
+                <div class="empty-state">Memuat data...</div>
+            </div>
         </div>
     </div>
-</div>
 @endsection
 
 <script src="{{ asset('js/apexcharts.min.js') }}"></script>
 <script>
     let currentRange = 'today';
     let trendChart = null;
-    let operatorChart = null;
 
     // ── FILTER ──
     function setRange(range, el) {
@@ -469,7 +467,6 @@
 
             updateKPI(data.kpi);
             updateTrendChart(data.trend);
-            updateOperatorChart(data.top_operators);
             updateActivity(data.activity);
         } catch (e) {
             console.error(e);
@@ -594,142 +591,110 @@
         }
     }
 
-    // ── OPERATOR CHART ──
-    function updateOperatorChart(ops) {
-        if (!ops.length) {
-            document.getElementById('chartOperator').innerHTML = '<div class="empty-state">Belum ada data</div>';
-            if (operatorChart) {
-                operatorChart.destroy();
-                operatorChart = null;
-            }
-            return;
-        }
-
-        const opts = {
-            series: [{
-                name: 'Total Rak',
-                data: ops.map(o => o.total)
-            }],
-            chart: {
-                type: 'bar',
-                height: 180,
-                background: 'transparent',
-                toolbar: {
-                    show: false
-                },
-                animations: {
-                    enabled: true,
-                    easing: 'easeinout',
-                    speed: 600
-                },
-            },
-            plotOptions: {
-                bar: {
-                    borderRadius: 6,
-                    horizontal: true,
-                    barHeight: '60%'
-                }
-            },
-            dataLabels: {
-                enabled: true,
-                style: {
-                    fontSize: '10px',
-                    colors: ['#e2e8f0']
-                }
-            },
-            xaxis: {
-                categories: ops.map(o => o.nama),
-                labels: {
-                    style: {
-                        colors: '#64748b',
-                        fontSize: '10px'
-                    }
-                }
-            },
-            yaxis: {
-                labels: {
-                    style: {
-                        colors: '#64748b',
-                        fontSize: '10px'
-                    },
-                    maxWidth: 90
-                }
-            },
-            colors: ['#6366f1'],
-            grid: {
-                borderColor: 'rgba(255,255,255,0.05)'
-            },
-            tooltip: {
-                theme: 'dark',
-                y: {
-                    formatter: v => v + ' rak'
-                }
-            },
-            theme: {
-                mode: 'dark'
-            },
-        };
-
-        if (operatorChart) {
-            operatorChart.updateSeries([{
-                data: ops.map(o => o.total)
-            }]);
-            operatorChart.updateOptions({
-                xaxis: {
-                    categories: ops.map(o => o.nama)
-                }
-            });
-        } else {
-            operatorChart = new ApexCharts(document.getElementById('chartOperator'), opts);
-            operatorChart.render();
-        }
-    }
-
     // ── ACTIVITY FEED ──
     function updateActivity(items) {
+
         const feed = document.getElementById('activityFeed');
+
         if (!items || !items.length) {
             feed.innerHTML =
-                '<div style="text-align:center; padding:20px; color:#475569; font-size:12px;">Belum ada aktivitas</div>';
+                '<div style="text-align:center;padding:20px;color:#475569;font-size:12px;">Belum ada aktivitas</div>';
             return;
         }
 
         feed.innerHTML = items.map(item => {
-            let statusDot = 'status-dot';
-            if (item.status === 'diterima') statusDot += ' status-green';
-            else if (item.status === 'proses') statusDot += ' status-blue';
-            else if (item.status === 'sebagian') statusDot += ' status-orange';
-            else if (item.status === 'batal') statusDot += ' status-red';
+
+            let statusDot = 'activity-status';
+
+            if (item.status === 'batal') {
+                statusDot += ' status-batal';
+            } else if (item.status === 'diterima') {
+                statusDot += ' status-selesai';
+            } else {
+                statusDot += ' status-proses';
+            }
 
             const isKosong = item.tipe === 'rak_kosong';
-            const labelQty = isKosong ?
-                `<span style="color:#f59e0b">${item.total_rak} Rak / ${item.total_palet} Palet (KOSONG)</span>` :
-                `<span style="color:#64c8ff">${item.total_rak} Rak Isi</span>`;
 
+            const totalLabel = isKosong ?
+                `${item.total_rak} Rak / ${item.total_palet} Palet` :
+                `${item.total_rak} Rak `;
+            const palet = item.total_palet ?? 0;
             return `
-                <div class="activity-item">
-                    <div class="${statusDot}"></div>
-                    <div class="activity-content">
-                        <div class="activity-main" style="display:flex; justify-content:space-between; align-items:center;">
-                            <b>${item.mobil}</b>
-                            ${labelQty}
-                        </div>
-                        <div class="activity-meta" style="color:#cbd5e1; font-size:11px; margin-top:6px; line-height:1.4;">
-                             <div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.03); padding:4px 8px; border-radius:4px;">
-                                <span>📤 <b>KIRIM:</b> ${item.operator_kirim}</span>
-                                <span style="color:#64c8ff">${item.jam_kirim} • ${item.tgl}</span>
-                             </div>
-                             <div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.01); padding:4px 8px; border-radius:4px; margin-top:2px;">
-                                <span>📥 <b>TERIMA:</b> ${item.operator_terima}</span>
-                                <span style="color:#4ade80">${item.jam_terima}</span>
-                             </div>
-                             <div style="margin-top:4px; padding:0 8px; color:#94a3b8; font-size:10px;">
-                                🚛 Supir: ${item.supir}
-                             </div>
-                        </div>
+            <div class="activity-item">
+
+                <div class="${statusDot}"></div>
+
+                <div style="flex:1; min-width:0;">
+
+                    <!-- BARIS 1 -->
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
+                        font-size:12px;
+                        font-weight:700;
+                        color:#e2e8f0;
+                    ">
+                        <span>🚙 ${item.mobil}</span>
+
+                        <span style="
+                            color:#94a3b8;
+                            font-size:11px;
+                            font-weight:500;
+                        ">
+                            🚛 ${item.supir}
+                        </span>
                     </div>
+<!-- BARIS KIRIM -->
+<div style="
+    display:grid;
+    grid-template-columns: 120px 60px 1fr;
+    gap:6px;
+    align-items:center;
+    font-size:10px;
+    color:#cbd5e1;
+">
+
+    <span>${item.operator_kirim}</span>
+
+    <span style="color:#64748b; text-align:center;">
+        ${item.jam_kirim}
+    </span>
+
+    <span style="text-align:right;">
+        ${totalLabel}
+    </span>
+
+</div>
+
+<!-- BARIS TERIMA -->
+<div style="
+    display:grid;
+    grid-template-columns: 120px 60px 1fr;
+    gap:6px;
+    align-items:center;
+    font-size:10px;
+    color:#cbd5e1;
+    margin-top:2px;
+">
+
+    <span> ${item.operator_terima || '-'}</span>
+
+    <span style="color:#64748b; text-align:center;">
+        ${item.jam_terima || '-'}
+    </span>
+
+   <span style="text-align:right;">
+    ${palet ? `${item.total_rak} Rak / ${palet} Palet` : `${item.total_rak} Rak`}
+</span>
+
+</div>
+
                 </div>
-            `;
+
+            </div>
+        `;
         }).join('');
     }
 

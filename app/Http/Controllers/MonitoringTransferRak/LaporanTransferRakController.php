@@ -4,9 +4,7 @@ namespace App\Http\Controllers\MonitoringTransferRak;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\MonitoringTransferRak\TransferRak;
-use App\Models\MonitoringTransferRak\TransferRakDetail;
 use App\Models\MonitoringTransferRak\Driver;
 use App\Models\MonitoringTransferRak\Vehicle;
 use App\Models\Employee;
@@ -38,10 +36,10 @@ class LaporanTransferRakController extends Controller
         $kendaraan  = $request->get('kendaraan', '');
 
         $query = TransferRak::with([
-                'karyawan:id,name',
-                'supir:id,nama_karyawan',
-                'mobil:id,nama_kendaraan',
-            ])
+            'karyawan:id,name',
+            'supir:id,nama_karyawan',
+            'mobil:id,nama_kendaraan',
+        ])
             ->whereIn('status', ['selesai', 'batal'])
             ->whereDate('created_at', '>=', $startDate)
             ->whereDate('created_at', '<=', $endDate);
@@ -113,7 +111,6 @@ class LaporanTransferRakController extends Controller
             'karyawan:id,name',
             'supir:id,nama_karyawan',
             'mobil:id,nama_kendaraan',
-            'details' => fn($q) => $q->orderBy('waktu_scan'),
         ])->findOrFail($id);
 
         $durasi = ($transfer->waktu_mulai && $transfer->waktu_selesai)
@@ -122,21 +119,23 @@ class LaporanTransferRakController extends Controller
 
         return response()->json([
             'header' => [
-                'tanggal'     => $transfer->created_at->format('d/m/Y'),
-                'operator'    => $transfer->karyawan?->name ?? '-',
-                'supir'       => $transfer->supir?->nama_karyawan ?? '-',
-                'kendaraan'   => $transfer->mobil?->nama_kendaraan ?? '-',
-                'total_rak'   => $transfer->total_rak,
-                'waktu_mulai' => $transfer->waktu_mulai?->format('H:i:s') ?? '-',
+                'tanggal'       => $transfer->created_at->format('d/m/Y'),
+                'operator'      => $transfer->karyawan?->name ?? '-',
+                'supir'         => $transfer->supir?->nama_karyawan ?? '-',
+                'kendaraan'     => $transfer->mobil?->nama_kendaraan ?? '-',
+                'total_rak'     => $transfer->total_rak,
+                'waktu_mulai'   => $transfer->waktu_mulai?->format('H:i:s') ?? '-',
                 'waktu_selesai' => $transfer->waktu_selesai?->format('H:i:s') ?? '-',
-                'durasi'      => $durasi,
-                'catatan'     => $transfer->catatan ?? '-',
+                'durasi'        => $durasi,
+                'catatan'       => $transfer->catatan ?? '-',
             ],
-            'details' => $transfer->details->map(fn($d, $i) => [
-                'no'         => $i + 1,
-                'kode_rak'   => $d->kode_rak,
-                'waktu_scan' => $d->waktu_scan->format('H:i:s'),
-            ]),
+            'details' => [
+                [
+                    'no' => 1,
+                    'kode_rak' => '-',
+                    'waktu_scan' => '-'
+                ]
+            ],
         ]);
     }
 }

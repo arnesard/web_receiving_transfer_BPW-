@@ -71,10 +71,11 @@ class TransferRakController extends Controller
                 ->first();
 
             if ($existingActive) {
-                $totalScanned = TransferRakDetail::where('transfer_rak_id', $existingProses->id)->count();
+                $totalScanned = TransferRakDetail::where('transfer_rak_id', $existingActive->id)->count();
+
                 return response()->json([
                     'success'      => true,
-                    'transfer_id'  => $existingProses->id,
+                    'transfer_id'  => $existingActive->id,
                     'joined'       => true,
                     'total_sudah'  => $totalScanned,
                     'message'      => 'Bergabung ke transfer yang sedang berjalan',

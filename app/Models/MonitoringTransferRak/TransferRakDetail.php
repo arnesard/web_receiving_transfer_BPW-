@@ -4,6 +4,7 @@ namespace App\Models\MonitoringTransferRak;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Employee;
+use App\Models\MonitoringTransferRak\TransferRak;
 
 class TransferRakDetail extends Model
 {

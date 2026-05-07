@@ -407,105 +407,105 @@
 @endpush
 
 @section('content')
-{{-- MODAL DETAIL --}}
-<div class="modal-overlay hidden" id="detailModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <div class="modal-title">📦 Detail Rak Transfer</div>
-            <button class="modal-close" onclick="closeDetail()">&times;</button>
-        </div>
-        <div class="modal-info" id="modalInfo"></div>
-        <table class="detail-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Kode Rak</th>
-                    <th>Waktu Scan</th>
-                </tr>
-            </thead>
-            <tbody id="modalBody"></tbody>
-        </table>
-    </div>
-</div>
-
-<div class="lap-wrap">
-    {{-- HEADER --}}
-    <div class="lap-header">
-        <div class="lap-title">📋 Laporan Transfer Rak</div>
-    </div>
-
-    {{-- FILTER --}}
-    <div class="filter-card">
-        <div class="filter-grid">
-            <div class="filter-group">
-                <label class="filter-label">Tanggal Mulai</label>
-                <input type="date" class="filter-input" id="fStartDate">
+    {{-- MODAL DETAIL --}}
+    <div class="modal-overlay hidden" id="detailModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">📦 Detail Rak Transfer</div>
+                <button class="modal-close" onclick="closeDetail()">&times;</button>
             </div>
-            <div class="filter-group">
-                <label class="filter-label">Tanggal Akhir</label>
-                <input type="date" class="filter-input" id="fEndDate">
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">Operator</label>
-                <select class="filter-select" id="fOperator">
-                    <option value="">Semua</option>
-                    @foreach ($operators as $o)
-                        <option value="{{ $o->id }}">{{ $o->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="filter-group">
-                <label class="filter-label">Supir</label>
-                <select class="filter-select" id="fSupir">
-                    <option value="">Semua</option>
-                    @foreach ($drivers as $d)
-                        <option value="{{ $d->id }}">{{ $d->nama_karyawan }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="filter-group full">
-                <label class="filter-label">Kendaraan</label>
-                <select class="filter-select" id="fKendaraan">
-                    <option value="">Semua</option>
-                    @foreach ($vehicles as $v)
-                        <option value="{{ $v->id }}">{{ $v->nama_kendaraan }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        <div class="filter-actions">
-            <button class="btn-filter btn-search" onclick="loadData()">🔍 Cari</button>
-            <button class="btn-filter btn-export" onclick="exportExcel()">📥 Export Excel</button>
-            <button class="btn-filter btn-reset" onclick="resetFilter()">↺ Reset</button>
+            <div class="modal-info" id="modalInfo"></div>
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Kode Rak</th>
+                        <th>Waktu Scan</th>
+                    </tr>
+                </thead>
+                <tbody id="modalBody"></tbody>
+            </table>
         </div>
     </div>
 
-    {{-- TABLE --}}
-    <div class="table-card">
-        <div class="table-title">📄 Data Transfer Rak</div>
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Tanggal</th>
-                    <th>Operator</th>
-                    <th>Supir</th>
-                    <th>Kendaraan</th>
-                    <th>Total Rak</th>
-                    <th>Mulai</th>
-                    <th>Selesai</th>
-                    <th>Durasi</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <tr>
-                    <td colspan="10" class="empty-state">Tekan "Cari" untuk menampilkan data</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="lap-wrap">
+        {{-- HEADER --}}
+        <div class="lap-header">
+            <div class="lap-title">📋 Laporan Transfer Rak</div>
+        </div>
+
+        {{-- FILTER --}}
+        <div class="filter-card">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Tanggal Mulai</label>
+                    <input type="date" class="filter-input" id="fStartDate">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tanggal Akhir</label>
+                    <input type="date" class="filter-input" id="fEndDate">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Operator</label>
+                    <select class="filter-select" id="fOperator">
+                        <option value="">Semua</option>
+                        @foreach ($operators as $o)
+                            <option value="{{ $o->id }}">{{ $o->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Supir</label>
+                    <select class="filter-select" id="fSupir">
+                        <option value="">Semua</option>
+                        @foreach ($drivers as $d)
+                            <option value="{{ $d->id }}">{{ $d->nama_karyawan }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="filter-group full">
+                    <label class="filter-label">Kendaraan</label>
+                    <select class="filter-select" id="fKendaraan">
+                        <option value="">Semua</option>
+                        @foreach ($vehicles as $v)
+                            <option value="{{ $v->id }}">{{ $v->nama_kendaraan }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn-filter btn-search" onclick="loadData()">🔍 Cari</button>
+                <button class="btn-filter btn-export" onclick="exportExcel()">📥 Export Excel</button>
+                <button class="btn-filter btn-reset" onclick="resetFilter()">↺ Reset</button>
+            </div>
+        </div>
+
+        {{-- TABLE --}}
+        <div class="table-card">
+            <div class="table-title">📄 Data Transfer Rak</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Tanggal</th>
+                        <th>Operator</th>
+                        <th>Supir</th>
+                        <th>Kendaraan</th>
+                        <th>Total Rak</th>
+                        <th>Mulai</th>
+                        <th>Selesai</th>
+                        <th>Durasi</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="10" class="empty-state">Tekan "Cari" untuk menampilkan data</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 @endsection
 
 <script src="{{ asset('js/xlsx.full.min.js') }}"></script>
@@ -546,10 +546,17 @@
     }
 
     function updateKPI(r) {
-        document.getElementById('kpiTransfer').textContent = r.total_transfer.toLocaleString('id-ID');
-        document.getElementById('kpiRak').textContent = r.total_rak.toLocaleString('id-ID');
-        document.getElementById('kpiDurasi').textContent = r.avg_durasi;
-        document.getElementById('kpiRate').textContent = r.success_rate + '%';
+        if (!r) return;
+
+        const el1 = document.getElementById('kpiTransfer');
+        const el2 = document.getElementById('kpiRak');
+        const el3 = document.getElementById('kpiDurasi');
+        const el4 = document.getElementById('kpiRate');
+
+        if (el1) el1.textContent = r.total_transfer;
+        if (el2) el2.textContent = r.total_rak;
+        if (el3) el3.textContent = r.avg_durasi;
+        if (el4) el4.textContent = r.success_rate + '%';
     }
 
     function renderTable(data) {
