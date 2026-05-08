@@ -287,7 +287,8 @@
             border-radius: 16px;
             padding: 20px;
             width: 95%;
-            max-width: 800px; /* Lebarin modal biar muat kolom baru */
+            max-width: 800px;
+            /* Lebarin modal biar muat kolom baru */
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -438,34 +439,6 @@
         {{-- HEADER --}}
         <div class="lap-header">
             <div class="lap-title">📋 Laporan Transfer Rak</div>
-        </div>
-
-        {{-- KPI SUMMARY --}}
-        <div class="kpi-row">
-            <div class="kpi-card" style="--kc: #64c8ff">
-                <div class="kpi-icon">🚛</div>
-                <div class="kpi-label">Total Transfer</div>
-                <div class="kpi-value" id="kpiTransfer">0</div>
-                <div class="kpi-sub">Data terfilter</div>
-            </div>
-            <div class="kpi-card" style="--kc: #4ade80">
-                <div class="kpi-icon">📦</div>
-                <div class="kpi-label">Total Rak</div>
-                <div class="kpi-value" id="kpiRak">0</div>
-                <div class="kpi-sub">Isi + Kosong</div>
-            </div>
-            <div class="kpi-card" style="--kc: #f59e0b">
-                <div class="kpi-icon">⏱</div>
-                <div class="kpi-label">Rata-rata Durasi</div>
-                <div class="kpi-value" id="kpiDurasi">0</div>
-                <div class="kpi-sub">Menit per trip</div>
-            </div>
-            <div class="kpi-card" style="--kc: #a78bfa">
-                <div class="kpi-icon">🎯</div>
-                <div class="kpi-label">Success Rate</div>
-                <div class="kpi-value" id="kpiRate">0%</div>
-                <div class="kpi-sub">Persentase selesai</div>
-            </div>
         </div>
 
         {{-- FILTER --}}

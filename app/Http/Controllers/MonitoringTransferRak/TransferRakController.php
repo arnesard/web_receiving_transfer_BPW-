@@ -67,7 +67,7 @@ class TransferRakController extends Controller
 
             // Cek apakah mobil ini sudah ada transfer yang sedang proses (multi-operator join)
             $existingActive = TransferRak::where('id_mobil', $vehicle->id)
-                ->whereIn('status', ['proses', 'selesai', 'sebagian'])
+                ->whereIn('status', ['proses'])
                 ->first();
 
             if ($existingActive) {
@@ -184,9 +184,9 @@ class TransferRakController extends Controller
             ]);
 
             // Update total_rak realtime
-            $total = TransferRakDetail::where('transfer_rak_id', $validated['transfer_rak_id'])->count();
-            $transfer->update(['total_rak' => $total]);
+            $transfer->increment('total_rak');
 
+            $total = $transfer->fresh()->total_rak;
             return response()->json([
                 'success'   => true,
                 'kode_rak'  => $detail->kode_rak,
@@ -564,6 +564,7 @@ class TransferRakController extends Controller
      */
     public function cancel(Request $request)
     {
+
         try {
             $validated = $request->validate([
                 'transfer_rak_id' => 'required|integer|exists:transfer_raks,id',
@@ -673,9 +674,12 @@ class TransferRakController extends Controller
             ->map(function ($t) {
                 // Ambil semua nama pengirim unik dari detail (kalo ada)
                 $senderNames = \App\Models\MonitoringTransferRak\TransferRakDetail::where('transfer_rak_id', $t->id)
-                    ->join('employees', 'transfer_rak_details.id_karyawan_pengirim', '=', 'employees.id')
-                    ->distinct()
-                    ->pluck('employees.name')
+                    ->with('karyawanPengirim')
+                    ->get()
+                    ->pluck('karyawanPengirim.name')
+                    ->filter()
+                    ->unique()
+                    ->values()
                     ->toArray();
 
                 $senders = !empty($senderNames) ? implode(', ', $senderNames) : ($t->karyawan?->name ?? '-');

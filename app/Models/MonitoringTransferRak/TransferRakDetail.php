@@ -12,7 +12,7 @@ class TransferRakDetail extends Model
 
     protected $fillable = [
         'transfer_rak_id',
-        'id_karyawan_pengirim', // Tambahin ini
+        'id_karyawan_pengirim',
         'kode_rak',
         'waktu_scan',
         'lokasi_diterima',

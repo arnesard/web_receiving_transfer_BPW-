@@ -499,8 +499,10 @@
                 <div class="setup-panel" id="setupKirim">
                     <div class="setup-row">
                         <label class="setup-label">🚗 Nama Supir</label>
-                        <input list="driverList" class="setup-input" id="supirInput" placeholder="Ketik/pilih supir..."
+
+                        <input list="driverList" class="setup-input" id="supirInput" placeholder="Ketik / pilih supir..."
                             autocomplete="off">
+
                         <datalist id="driverList"></datalist>
                     </div>
                     <div class="setup-row">
@@ -653,8 +655,11 @@
                 <div class="setup-panel" id="setupKosong">
                     <div class="setup-row">
                         <label class="setup-label">🚗 Nama Supir</label>
-                        <input list="driverList" class="setup-input" id="supirKosongInput"
-                            placeholder="Ketik/pilih supir..." autocomplete="off">
+
+                        <input list="driverListKosong" class="setup-input" id="supirKosongInput"
+                            placeholder="Ketik / pilih supir..." autocomplete="off">
+
+                        <datalist id="driverListKosong"></datalist>
                     </div>
                     <div class="setup-row">
                         <label class="setup-label">🏢 Lokasi Asal</label>
@@ -714,7 +719,7 @@
 
 
     {{-- MODAL PILIH OPERATOR --}}
-    <div class="modal-overlay hidden" id="operatorModal">
+    <div class="modal-overlay" id="operatorModal">
         <div class="modal-box">
             <div class="modal-title">👤 Pilih Operator (Login)</div>
             <select class="setup-select" id="modalKaryawanSelect" style="margin-bottom:12px;">
@@ -755,9 +760,6 @@
         }
 
         // ── INIT ──
-        document.addEventListener('DOMContentLoaded', () => {
-            loadDrivers();
-        });
 
         function openOperatorModal() {
             document.getElementById('operatorModal').classList.remove('hidden');
@@ -781,13 +783,6 @@
             // Auto fill penerima dgn operator login
             document.getElementById('penerimaInput').value = state.operatorId;
         });
-
-        async function loadDrivers() {
-            const res = await fetch(`/transfer-rak/drivers?q=`);
-            const data = await res.json();
-            document.getElementById('driverList').innerHTML = data.map(d => `<option value="${d.nama_karyawan}">`).join(
-                '');
-        }
 
         // ── KIRIM LOGIC ──
         const checkStartKirim = () => {
@@ -1265,5 +1260,35 @@
             document.getElementById('catatanKosongInput').value = '';
             checkKosongReady();
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const driverList = document.getElementById('driverList');
+            const driverListKosong = document.getElementById('driverListKosong');
+
+            fetch('/transfer-rak/drivers')
+                .then(response => response.json())
+                .then(data => {
+
+                    data.forEach(driver => {
+
+                        // TAB KIRIM
+                        let option1 = document.createElement('option');
+                        option1.value = driver.nama_karyawan;
+                        driverList.appendChild(option1);
+
+                        // TAB KOSONG
+                        let option2 = document.createElement('option');
+                        option2.value = driver.nama_karyawan;
+                        driverListKosong.appendChild(option2);
+
+                    });
+
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+
+        });
     </script>
 @endsection
