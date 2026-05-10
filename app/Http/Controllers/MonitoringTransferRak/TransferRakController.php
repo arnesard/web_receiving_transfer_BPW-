@@ -673,21 +673,21 @@ class TransferRakController extends Controller
             ->get()
             ->map(function ($t) {
                 // Ambil semua nama pengirim unik dari detail (kalo ada)
-                $senderNames = \App\Models\MonitoringTransferRak\TransferRakDetail::where('transfer_rak_id', $t->id)
-                    ->with('karyawanPengirim')
-                    ->get()
-                    ->pluck('karyawanPengirim.name')
-                    ->filter()
-                    ->unique()
-                    ->values()
-                    ->toArray();
+                $details = \App\Models\MonitoringTransferRak\TransferRakDetail::where('transfer_rak_id', $t->id)
+                    ->with(['karyawanPengirim', 'penerima'])
+                    ->get();
 
+                $senderNames = $details->pluck('karyawanPengirim.name')->filter()->unique()->values()->toArray();
                 $senders = !empty($senderNames) ? implode(', ', $senderNames) : ($t->karyawan?->name ?? '-');
+
+                // Ambil semua nama penerima unik dari detail
+                $receiverNames = $details->pluck('penerima.name')->filter()->unique()->values()->toArray();
+                $receivers = !empty($receiverNames) ? implode(', ', $receiverNames) : ($t->penerima?->name ?? '-');
 
                 return [
                     'tipe'      => $t->tipe,
                     'operator_kirim'   => $senders,
-                    'operator_terima'  => $t->penerima?->name ?? '-',
+                    'operator_terima'  => $receivers,
                     'supir'     => $t->supir?->nama_karyawan ?? '-',
                     'mobil'     => $t->mobil?->nama_kendaraan ?? '-',
                     'total_rak' => ($t->tipe === 'rak_kosong') ? $t->jumlah_rak_kosong : $t->total_rak,

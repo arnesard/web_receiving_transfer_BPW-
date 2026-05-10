@@ -495,7 +495,8 @@
                     <tr>
                         <th>No</th>
                         <th>Tanggal</th>
-                        <th>Operator</th>
+                        <th>Pengirim</th>
+                        <th>Penerima</th>
                         <th>Supir</th>
                         <th>Kendaraan</th>
                         <th>Total Rak</th>
@@ -537,7 +538,7 @@
         });
 
         document.getElementById('tableBody').innerHTML =
-            '<tr><td colspan="10" class="empty-state"><span class="loading-spinner"></span> Memuat data...</td></tr>';
+            '<tr><td colspan="11" class="empty-state"><span class="loading-spinner"></span> Memuat data...</td></tr>';
 
         try {
             const res = await fetch(`/transfer-rak/laporan/data?${params}`);
@@ -548,7 +549,7 @@
             renderTable(json.data);
         } catch (e) {
             document.getElementById('tableBody').innerHTML =
-                '<tr><td colspan="10" class="empty-state">❌ Gagal memuat data</td></tr>';
+                '<tr><td colspan="11" class="empty-state">❌ Gagal memuat data</td></tr>';
         }
     }
 
@@ -569,7 +570,7 @@
     function renderTable(data) {
         const tbody = document.getElementById('tableBody');
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Tidak ada data ditemukan</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="11" class="empty-state">Tidak ada data ditemukan</td></tr>';
             return;
         }
         tbody.innerHTML = data.map((d, i) => `
@@ -577,6 +578,7 @@
             <td>${i + 1}</td>
             <td>${d.tanggal}</td>
             <td>${d.operator}</td>
+            <td style="color:#4ade80">${d.penerima}</td>
             <td>${d.supir}</td>
             <td>${d.kendaraan}</td>
             <td style="font-weight:700;color:#64c8ff">${d.total_rak}</td>
@@ -650,9 +652,9 @@
             return;
         }
 
-        const header = ['No', 'Tanggal', 'Operator', 'Supir', 'Kendaraan', 'Total Rak', 'Mulai', 'Selesai', 'Durasi'];
+        const header = ['No', 'Tanggal', 'Pengirim', 'Penerima', 'Supir', 'Kendaraan', 'Total Rak', 'Mulai', 'Selesai', 'Durasi'];
         const rows = reportData.map((d, i) => [
-            i + 1, d.tanggal, d.operator, d.supir, d.kendaraan,
+            i + 1, d.tanggal, d.operator, d.penerima, d.supir, d.kendaraan,
             d.total_rak, d.waktu_mulai, d.waktu_selesai, d.durasi
         ]);
 
@@ -661,26 +663,17 @@
         const ws = XLSX.utils.aoa_to_sheet(wsData);
 
         // Column widths
-        ws['!cols'] = [{
-                wch: 5
-            }, {
-                wch: 12
-            }, {
-                wch: 20
-            }, {
-                wch: 20
-            }, {
-                wch: 18
-            },
-            {
-                wch: 10
-            }, {
-                wch: 8
-            }, {
-                wch: 8
-            }, {
-                wch: 10
-            }
+        ws['!cols'] = [
+            { wch: 5 },
+            { wch: 12 },
+            { wch: 22 },
+            { wch: 22 },
+            { wch: 20 },
+            { wch: 18 },
+            { wch: 14 },
+            { wch: 8 },
+            { wch: 8 },
+            { wch: 10 }
         ];
 
         XLSX.utils.book_append_sheet(wb, ws, 'Laporan Transfer Rak');

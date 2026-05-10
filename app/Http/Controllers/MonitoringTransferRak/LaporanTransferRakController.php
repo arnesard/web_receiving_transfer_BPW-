@@ -41,7 +41,8 @@ class LaporanTransferRakController extends Controller
             'karyawan:id,name',
             'supir:id,nama_karyawan',
             'mobil:id,nama_kendaraan',
-            'details.karyawanPengirim:id,name' // Ambil data siapa yang scan tiap rak
+            'details.karyawanPengirim:id,name', // Ambil data siapa yang scan tiap rak
+            'details.penerima:id,name' // Ambil data siapa yang terima tiap rak
         ])
             ->whereIn('status', ['selesai', 'diterima', 'sebagian', 'batal'])
             ->whereDate('created_at', '>=', $startDate)
@@ -79,6 +80,10 @@ class LaporanTransferRakController extends Controller
             if ($t->karyawan) array_unshift($names, $t->karyawan->name);
             $allOperators = implode(', ', array_unique($names));
 
+            // Ambil semua nama penerima unik dari detail
+            $receiverNames = $t->details->pluck('penerima.name')->filter()->unique()->toArray();
+            $allReceivers = implode(', ', $receiverNames);
+
             $durasi = ($t->waktu_mulai && $t->waktu_selesai)
                 ? $t->waktu_mulai->diffInMinutes($t->waktu_selesai) . ' mnt'
                 : '-';
@@ -94,6 +99,7 @@ class LaporanTransferRakController extends Controller
                 'no'            => $idx + 1,
                 'tanggal'       => $t->created_at->format('d/m/Y'),
                 'operator'      => $allOperators ?: '-',
+                'penerima'      => $allReceivers ?: '-',
                 'supir'         => $t->supir?->nama_karyawan ?? '-',
                 'kendaraan'     => $t->mobil?->nama_kendaraan ?? '-',
                 'total_rak'     => $labelRak,
