@@ -22,21 +22,6 @@ pipeline {
     options {
         timestamps()
     }
-    
-    properties([
-        pipelineTriggers([
-            [$class: 'GenericTrigger',
-                genericVariables: [
-                    [key: 'ref', value: '$.ref'],
-                    [key: 'after', value: '$.after']
-                ],
-                token: 'fgb-web-receiving',
-                causeString: 'GitLab Push Trigger',
-                printContributedVariables: true,
-                printPostContent: true
-            ]
-        ])
-    ])
 
     stages {
         stage('Checkout Source') {
