@@ -24,6 +24,34 @@ pipeline {
     }
 
     stages {
+        stage('Pre Approval') {
+            steps {
+                script {
+                    def approve = input(
+                        id: 'PreApproval',
+                        message: """
+                            PIPELINE TRIGGERED
+
+                            Branch : ${BRANCH}
+
+                            Approve untuk lanjut pipeline?
+                        """,
+                        parameters: [
+                            string(
+                                name: 'APPROVE',
+                                defaultValue: 'no',
+                                description: 'Ketik yes untuk lanjut'
+                            )
+                        ]
+                    )
+
+                    if (approve != 'yes') {
+                        error("Pipeline dihentikan")
+                    }
+                }
+            }
+        }
+
         stage('Checkout Source') {
             steps {
                 git branch: "${BRANCH}",
