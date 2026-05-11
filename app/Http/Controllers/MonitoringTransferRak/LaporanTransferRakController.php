@@ -50,11 +50,11 @@ class LaporanTransferRakController extends Controller
 
         if ($operator) {
             // Cek apakah operator ini yang start transfer ATAU yang ikutan scan rak di detail
-            $query->where(function($q) use ($operator) {
+            $query->where(function ($q) use ($operator) {
                 $q->where('id_karyawan', $operator)
-                  ->orWhereHas('details', function($sq) use ($operator) {
-                      $sq->where('id_karyawan_pengirim', $operator);
-                  });
+                    ->orWhereHas('details', function ($sq) use ($operator) {
+                        $sq->where('id_karyawan_pengirim', $operator);
+                    });
             });
         }
         if ($supir) $query->where('id_supir', $supir);
@@ -65,10 +65,10 @@ class LaporanTransferRakController extends Controller
         // ── RINGKASAN (KPI) ──
         $done = $transfers->whereIn('status', ['selesai', 'diterima', 'sebagian']);
         $totalTransfer = $transfers->count();
-        
+
         // Hitung total rak (Isi + Kosong)
         $totalRak = $done->sum('total_rak') + $done->sum('jumlah_rak_kosong');
-        
+
         $avgDurasi = $done
             ->filter(fn($t) => $t->waktu_mulai && $t->waktu_selesai)
             ->avg(fn($t) => $t->waktu_mulai->diffInMinutes($t->waktu_selesai));
@@ -81,7 +81,19 @@ class LaporanTransferRakController extends Controller
             $allOperators = implode(', ', array_unique($names));
 
             // Ambil semua nama penerima unik dari detail
-            $receiverNames = $t->details->pluck('penerima.name')->filter()->unique()->toArray();
+            $receiverNames = [];
+
+            if ($t->tipe === 'rak_kosong') {
+                // ambil dari penerima header (tab terima)
+                $receiverNames = $t->penerima ? [$t->penerima->name] : [];
+            } else {
+                // rak isi: dari detail
+                $receiverNames = $t->details
+                    ->pluck('penerima.name')
+                    ->filter()
+                    ->unique()
+                    ->toArray();
+            }
             $allReceivers = implode(', ', $receiverNames);
 
             $durasi = ($t->waktu_mulai && $t->waktu_selesai)
@@ -139,7 +151,7 @@ class LaporanTransferRakController extends Controller
             ? $transfer->waktu_mulai->diffInMinutes($transfer->waktu_selesai) . ' menit'
             : '-';
 
-        $details = $transfer->details->map(function($d, $idx) {
+        $details = $transfer->details->map(function ($d, $idx) {
             return [
                 'no'         => $idx + 1,
                 'kode_rak'   => $d->kode_rak,
@@ -157,9 +169,9 @@ class LaporanTransferRakController extends Controller
                 'operator'      => $transfer->karyawan?->name ?? '-',
                 'supir'         => $transfer->supir?->nama_karyawan ?? '-',
                 'kendaraan'     => $transfer->mobil?->nama_kendaraan ?? '-',
-                'total_rak'     => ($transfer->tipe === 'rak_kosong') 
-                                    ? $transfer->jumlah_rak_kosong . ' Rak / ' . $transfer->jumlah_palet_kosong . ' Palet'
-                                    : $transfer->total_rak . ' Rak',
+                'total_rak'     => ($transfer->tipe === 'rak_kosong')
+                    ? $transfer->jumlah_rak_kosong . ' Rak / ' . $transfer->jumlah_palet_kosong . ' Palet'
+                    : $transfer->total_rak . ' Rak',
                 'waktu_mulai'   => $transfer->waktu_mulai?->format('H:i:s') ?? '-',
                 'waktu_selesai' => $transfer->waktu_selesai?->format('H:i:s') ?? '-',
                 'durasi'        => $durasi,

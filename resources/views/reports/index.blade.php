@@ -458,7 +458,8 @@
                     <i data-lucide="briefcase" size="14"></i> Pekerjaan
                 </label>
 
-                <select id="jobTodayInput" class="form-control form-control-custom" onchange="applyFilters()">
+                <select id="jobTodayInput" name="job_today" class="form-control form-control-custom"
+                    onchange="applyFilters()">
                     <option value="">Semua Pekerjaan</option>
 
                     @foreach ($all_jobs as $job)
@@ -573,18 +574,13 @@
                         </thead>
                         <tbody class="border-top-0">
                             @forelse($receptions as $reception)
-                                <tr style="cursor:pointer;"
-                                    onclick="openDetailModal({{ json_encode([
-                                        'name' => $reception->emp_name ?? 'Unknown',
-                                        'date' => $reception->date->format('d/m/Y'),
-                                        'plant' => $reception->emp_plant,
-                                        'group' => $reception->emp_group,
-                                        'shift' => $reception->shift,
-                                        'job' => $reception->job_today,
-                                        'production' => number_format($reception->production_count),
-                                        'notes' => $reception->notes ?? '',
-                                        'photo' => $reception->photo ? asset($reception->photo) : '',
-                                    ]) }})">
+                                <tr style="cursor:pointer;" data-date="{{ $reception->date->format('Y-m-d') }}"
+                                    data-employee-id="{{ $reception->employee_id }}"
+                                    data-name="{{ $reception->emp_name }}" data-plant="{{ $reception->emp_plant }}"
+                                    data-group="{{ $reception->emp_group }}" data-shift="{{ $reception->shift }}"
+                                    data-job="{{ $reception->job_today }}"
+                                    data-production="{{ $reception->production_count }}"
+                                    data-notes="{{ $reception->notes }}">
                                     {{-- Kolom Foto --}}
                                     <td class="ps-3 py-2">
                                         @if ($reception->photo)
@@ -996,6 +992,8 @@
             if (group) url.searchParams.set('group', group);
             if (jobToday && jobToday.trim() !== '') {
                 url.searchParams.set('job_today', jobToday.trim());
+            } else {
+                url.searchParams.delete('job_today');
             }
             if (operatorName.trim()) url.searchParams.set('operator_name', operatorName.trim());
 
