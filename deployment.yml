@@ -165,7 +165,7 @@ spec:
         - name: regcred
       containers:
         - name: php
-          image: 10.129.78.111:1111/barcode/fgb-web-receiving-php:v1.0
+          image: 10.129.78.111:1111/barcode/fgb-web-receiving-php:IMAGE_TAG
           ports:
             - containerPort: 9000
           resources:
@@ -232,7 +232,7 @@ spec:
         - name: regcred
       containers:
         - name: nginx
-          image: 10.129.78.111:1111/barcode/fgb-web-receiving-nginx:v1.0
+          image: 10.129.78.111:1111/barcode/fgb-web-receiving-nginx:IMAGE_TAG
           ports:
             - containerPort: 80
           resources:
