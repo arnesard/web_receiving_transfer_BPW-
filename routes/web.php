@@ -12,7 +12,45 @@ use App\Http\Controllers\pilihmenu\PilihMenuController;
 use App\Http\Controllers\PenerimaanController;
 use App\Http\Controllers\MonitoringTransferRak\KaryawanTransfer;
 use App\Http\Controllers\MonitoringTransferRak\LaporanTransferRakController;
+use App\Http\Controllers\so_karantina\SpesialEntriKarantinaController;
+use App\Http\Controllers\so_karantina\RevisiKsoKarantinaController;
+use App\Http\Controllers\so_karantina\ValidasiKsoKarantinaController;
+use App\Http\Controllers\so_karantina\UploadBstbController;
 
+
+// MENU SO KARANTINA
+Route::get('/so-karantina', function () {
+    return view('so_karantina.menu');
+})->name('so_karantina.menu');
+
+// SPECIAL ENTRY KARANTINA
+Route::prefix('so-karantina/spesial-entry')->name('karantina.spesial.')->group(function () {
+    Route::get('/', [SpesialEntriKarantinaController::class, 'index'])->name('index');
+    Route::post('/set-team', [SpesialEntriKarantinaController::class, 'setTeam'])->name('setTeam');
+    Route::post('/reset-team', [SpesialEntriKarantinaController::class, 'resetTeam'])->name('resetTeam');
+    Route::post('/store', [SpesialEntriKarantinaController::class, 'store'])->name('store');
+});
+
+// REVISI KSO KARANTINA
+Route::prefix('so-karantina/revisi')->name('karantina.revisi.')->group(function () {
+    Route::get('/', [RevisiKsoKarantinaController::class, 'index'])->name('index');
+    Route::post('/set-filter', [RevisiKsoKarantinaController::class, 'setFilter'])->name('setFilter');
+    Route::post('/reset-team', [RevisiKsoKarantinaController::class, 'resetTeam'])->name('resetTeam');
+    Route::post('/update', [RevisiKsoKarantinaController::class, 'update'])->name('update');
+});
+
+// VALIDASI KSO KARANTINA
+Route::prefix('so-karantina/validasi')->name('karantina.validasi.')->group(function () {
+    Route::get('/', [ValidasiKsoKarantinaController::class, 'index'])->name('index');
+    Route::post('/set-team', [ValidasiKsoKarantinaController::class, 'setTeam'])->name('setTeam');
+    Route::post('/reset-team', [ValidasiKsoKarantinaController::class, 'resetTeam'])->name('resetTeam');
+    Route::post('/set-no-doc', [ValidasiKsoKarantinaController::class, 'setNoDoc'])->name('setNoDoc');
+    Route::post('/reset-no-doc', [ValidasiKsoKarantinaController::class, 'resetNoDoc'])->name('resetNoDoc');
+    Route::post('/approve/{id}', [ValidasiKsoKarantinaController::class, 'approve'])->name('approve');
+    Route::post('/reject/{id}', [ValidasiKsoKarantinaController::class, 'reject'])->name('reject');
+});
+
+Route::post('/so-karantina/upload-bstb', [UploadBstbController::class, 'upload'])->name('karantina.upload_bstb');
 
 Route::prefix('transfer-rak/karyawan')->group(function () {
     Route::get('/', [KaryawanTransfer::class, 'index'])->name('karyawan.index');
@@ -33,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/trend-data', [ProductionController::class, 'trendData'])->name('api.trend-data');
     Route::get('/api/trend-7days', [ProductionController::class, 'trendData7Days'])->name('api.trend-7days');
     Route::get('/api/plant-group', [ProductionController::class, 'plantGroupData'])->name('api.plant-group');
+    Route::get('/dashboard', [ProductionController::class, 'dashboard'])
+        ->name('dashboard');
 
     // Production input routes
     Route::get('/input/{plant?}', [ProductionController::class, 'inputForm'])->name('input.form');
@@ -77,9 +117,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
     //MONITORING TRANSFER RAK
-    Route::get('/dashboard', [PilihMenuController::class, 'index'])
-        ->name('dashboard')
-        ->middleware('auth');
     Route::post('/transfer-rak/start', [TransferRakController::class, 'start'])
         ->name('transfer.start');
     Route::post('/transfer-rak/scan', [TransferRakController::class, 'scan']);
@@ -132,8 +169,6 @@ Route::middleware(['auth'])->group(function () {
     });
 
     //PILIH MENU SETELAH LOGIN
-    Route::get('/dashboard', [PilihMenuController::class, 'index'])
-        ->name('dashboard');
     Route::get('/penerimaan-produksi', [ProductionController::class, 'inputForm'])
         ->name('penerimaan.index');
     Route::get('/menu', [PilihMenuController::class, 'index'])->name('pilihmenu.index');

@@ -11,7 +11,7 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            return redirect()->route('pilihmenu.index');
         }
         return view('auth.login');
     }
@@ -22,22 +22,18 @@ class AuthController extends Controller
             'name' => 'required|string',
             'password' => 'required',
         ]);
-
         $credentials = [
             'name' => $request->input('name'),
             'password' => $request->input('password'),
         ];
-
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->route('dashboard');
+            return redirect()->route('pilihmenu.index');
         }
-
         return back()->withErrors([
             'name' => 'Username atau password salah.',
         ])->onlyInput('name');
     }
-
     public function logout(Request $request)
     {
         Auth::logout();
