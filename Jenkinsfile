@@ -84,9 +84,9 @@ pipeline {
 
                     docker build \
                     -f Dockerfile.php \
-                    -t ${REGISTRY}/barcode/fgb-web-receiving-php:${IMAGE_TAG} .
+                    -t ${REGISTRY}/barcode/${NAMESPACE}-php:${IMAGE_TAG} .
 
-                    docker push ${REGISTRY}/barcode/fgb-web-receiving-php:${IMAGE_TAG}
+                    docker push ${REGISTRY}/barcode/${NAMESPACE}-php:${IMAGE_TAG}
                 '
                 """
             }
@@ -100,9 +100,9 @@ pipeline {
 
                     docker build \
                     -f Dockerfile.nginx \
-                    -t ${REGISTRY}/barcode/fgb-web-receiving-nginx:${IMAGE_TAG} .
+                    -t ${REGISTRY}/barcode/${NAMESPACE}-nginx:${IMAGE_TAG} .
 
-                    docker push ${REGISTRY}/barcode/fgb-web-receiving-nginx:${IMAGE_TAG}
+                    docker push ${REGISTRY}/barcode/${NAMESPACE}-nginx:${IMAGE_TAG}
                 '
                 """
             }
