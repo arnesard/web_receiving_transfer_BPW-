@@ -14,7 +14,7 @@ RUN npm run build
 # =========================
 # Stage 2 - PHP-FPM
 # =========================
-FROM php:8.4-fpm
+FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
     git curl zip unzip \
