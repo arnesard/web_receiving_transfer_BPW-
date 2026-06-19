@@ -26,9 +26,10 @@ class RevisiKsoKarantinaController extends Controller
     public function setFilter(Request $request)
     {
         $request->validate([
-            'team_hitung'  => 'required|string|max:50',
-            'kode_dokumen' => 'required|string|max:50',
+            'team_hitung'  => 'required|string|max:7',  // ← ubah 50 → 7
+            'kode_dokumen' => 'required|string|max:7',  // ← ubah 50 → 7
         ]);
+        // ...
 
         session([
             'revisi_team' => $request->team_hitung,

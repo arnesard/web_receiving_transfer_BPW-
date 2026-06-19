@@ -26,8 +26,9 @@ class SpesialEntriKarantinaController extends Controller
     public function setTeam(Request $request)
     {
         $request->validate([
-            'team_hitung' => 'required|string|max:50',
+            'team_hitung' => 'required|string|max:7',  // ← ubah 50 → 7
         ]);
+        // ...
 
         session(['spesial_team' => $request->team_hitung]);
 
@@ -40,8 +41,8 @@ class SpesialEntriKarantinaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'team_hitung' => 'required|string|max:50',
-            'no_doc'      => 'required|string|max:50',
+            'team_hitung' => 'required|string|max:7',  // ← ubah 50 → 7
+            'no_doc'      => 'required|string|max:7',  // ← ubah 50 → 7
             'item_code'   => 'required|string|max:100',
             'qty_stock'   => 'required|integer|min:0',
         ]);

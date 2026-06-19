@@ -47,7 +47,7 @@ class ValidasiKsoKarantinaController extends Controller
     public function setTeam(Request $request)
     {
         $request->validate([
-            'team_hitung' => 'required|string|max:50',
+            'team_hitung' => 'required|string|max:7',  // ← ubah 50 → 7
         ]);
 
         session(['validasi_team' => $request->team_hitung]);
@@ -62,7 +62,7 @@ class ValidasiKsoKarantinaController extends Controller
     public function setNoDoc(Request $request)
     {
         $request->validate([
-            'no_doc' => 'required|string|max:50',
+            'no_doc' => 'required|string|max:7',  // ← ubah 50 → 7
         ]);
 
         session(['validasi_no_doc' => $request->no_doc]);
