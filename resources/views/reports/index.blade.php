@@ -364,11 +364,65 @@
                     <i data-lucide="file-text" class="me-2" size="18"></i>
                     Export CSV
                 </button>
-                <button onclick="exportTableToExcel()"
-                    class="btn btn-success rounded-pill px-4 fw-bold transition-all hover-lift" type="button">
-                    <i data-lucide="download" class="me-2" size="18"></i>
-                    Export Excel
-                </button>
+               <!-- BARU - hit Laravel backend -->
+<div class="dropdown">
+    <button class="btn btn-success rounded-pill px-4 fw-bold transition-all hover-lift dropdown-toggle"
+            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i data-lucide="download" class="me-2" size="18"></i>
+        Export Excel
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-1" style="min-width: 240px;">
+        <li>
+            <h6 class="dropdown-header text-muted small fw-bold">Pilih Jenis Export</h6>
+        </li>
+
+        {{-- Rekap Harian --}}
+        <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+               href="{{ route('reports.export.excel') }}?export_type=daily&{{ http_build_query(request()->query()) }}">
+                <span class="stat-icon success mb-0" style="width:28px;height:28px;min-width:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#ecfdf5;color:#10b981;">
+                    <i data-lucide="calendar-days" style="width:14px;height:14px;"></i>
+                </span>
+                <div>
+                    <div class="fw-bold small">Rekap Harian</div>
+                    <div class="text-muted" style="font-size:0.7rem;">Pivot per tanggal sesuai filter</div>
+                </div>
+            </a>
+        </li>
+
+        <li><hr class="dropdown-divider my-1"></li>
+
+        {{-- Rekap Bulanan --}}
+        <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+               href="{{ route('reports.export.excel') }}?export_type=monthly_recap&{{ http_build_query(array_merge(request()->query(), ['year' => request()->get('year', date('Y'))])) }}">
+                <span class="stat-icon info mb-0" style="width:28px;height:28px;min-width:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f0f9ff;color:#3b82f6;">
+                    <i data-lucide="bar-chart-2" style="width:14px;height:14px;"></i>
+                </span>
+                <div>
+                    <div class="fw-bold small">Rekap Bulanan</div>
+                    <div class="text-muted" style="font-size:0.7rem;">Avg per bulan, ranking operator</div>
+                </div>
+            </a>
+        </li>
+
+        <li><hr class="dropdown-divider my-1"></li>
+
+        {{-- Ranking Grup per Plant --}}
+        <li>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2"
+               href="{{ route('reports.export.excel') }}?export_type=group_ranking&{{ http_build_query(array_merge(request()->query(), ['year' => request()->get('year', date('Y'))])) }}">
+                <span class="stat-icon warning mb-0" style="width:28px;height:28px;min-width:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#fffbeb;color:#f59e0b;">
+                    <i data-lucide="trophy" style="width:14px;height:14px;"></i>
+                </span>
+                <div>
+                    <div class="fw-bold small">Ranking Grup per Plant</div>
+                    <div class="text-muted" style="font-size:0.7rem;">Produksi grup berdasarkan leader</div>
+                </div>
+            </a>
+        </li>
+    </ul>
+</div>
             </div>
 
         </div>

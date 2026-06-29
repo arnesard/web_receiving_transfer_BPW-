@@ -19,7 +19,7 @@ class ReportsExport implements WithMultipleSheets
     {
         $sheets = [];
 
-        $sheets[] = new ProductionExport($this->receptions);
+      $sheets[] = new ProductionExport($this->receptions, 'monthly');
         $sheets[] = new OvertimeExport($this->overtimes);
 
         return $sheets;
